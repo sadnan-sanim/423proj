@@ -300,8 +300,10 @@ def draw_sunset():
     glPushMatrix()
     glDisable(GL_LIGHTING)
 
+    # Sun position based on visible road range
+    sunset_distance = player_z + visible_range + 2.0  # small offset ahead to make it look on the horizon
+
     # Draw background sky (orange to purple)
-    sunset_distance = player_z + 60.0
     glBegin(GL_QUADS)
     glColor3f(1.0, 0.5, 0.2)  # Bottom color (orange)
     glVertex3f(-100, -1.0, sunset_distance)
@@ -313,8 +315,8 @@ def draw_sunset():
 
     # Draw the sun
     glColor3f(1.0, 0.9, 0.0)  # Yellow
-    glTranslatef(0.0, 10.0, sunset_distance - 0.5)  # Slightly in front
-    glutSolidSphere(2.5, 32, 32)
+    glTranslatef(0.0, 1.0, sunset_distance - 0.5)  # (10 units high)
+    glutSolidSphere(5.0, 32, 32) 
 
     glPopMatrix()
 
