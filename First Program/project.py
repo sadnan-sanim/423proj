@@ -201,7 +201,8 @@ def keyboard(key, x, y):
 
     glutPostRedisplay()
 
-
+def sadnan_gay():
+    
 glutInit()
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 glutInitWindowSize(width, height)
