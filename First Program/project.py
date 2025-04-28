@@ -10,7 +10,7 @@ max_tree_distance = 50.0  # How far ahead trees are generated
 day_time = 0.0
 day_speed = 0.001  # Speed of time change
 debris = []
-debris_spawn_distance = 60.0
+debris_spawn_distance = 30.0
 debris_spacing = 3.0
 
 # Window size
@@ -116,16 +116,28 @@ def update_road():
         segment["vehicle_present"] = any(
             abs(v["z_position"] - segment["z_position"]) < 0.01 for v in vehicles
         )
-
+def draw_starting():
+    glPushMatrix()
+    glColor3f(48/255,93/255,75/255)
+    glRotatef(-90,1,0,0)
+    glTranslatef(-3,0,0)
+    glBegin(GL_QUADS)
+    glVertex3f(0,200,0)
+    glVertex3f(0,0,0)
+    glVertex3f(800,0,0)
+    glVertex3f(200,0,0)
+    glEnd()
+    glPopMatrix()
 def draw_road():
+    draw_starting()
     glPushMatrix()
     for segment in segments:
         is_road = int(segment["z_position"] / road_segment_length) % 2 == 0
 
         if is_road:
-            glColor3f(0.5, 0.5, 0.5)  # Road color
+            glColor3f(36/255,33/255,42/255)  # Road color
         else:
-            glColor3f(0.0, 0.5, 0.0)  # Grass color
+            glColor3f(48/255,93/255,75/255)  # Grass color
 
         # Draw road or grass
         glBegin(GL_QUADS)
@@ -171,6 +183,13 @@ def draw_player():
     glTranslatef(player_x,0.4,player_z)
     glColor3f(1,1,1)
     glutSolidSphere(0.080,32,32)
+    glPopMatrix()
+    # hat
+    glPushMatrix()
+    glTranslate(player_x,0.40,player_z)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(200/255,54/255,67/255)
+    glutSolidCone(0.08,0.25,32,32)
     # glutSolidOctahedron()
     glPopMatrix()
 
@@ -219,25 +238,48 @@ def draw_vehicles():
         # Rear right wheel
         draw_wheel(vehicle["x_position"] + wheel_offset, 0.03, vehicle["z_position"] - 0.35, wheel_radius, wheel_rotation)
 
+import random
+
 def draw_trees():
     for tree in trees:
         glPushMatrix()
         glTranslatef(tree["x"], 0.0, tree["z"])
 
         # Draw trunk
-        glColor3f(0.55, 0.27, 0.07)  # Brown
+        glColor3f(76/255, 44/255, 44/255)  # Brown
         glPushMatrix()
-        glTranslatef(0.0, 0.25, 0.0)
-        glScalef(0.1, 0.5, 0.1)
+        glTranslatef(0.0, 0.0, 0.0)
+        glScalef(0.2, 3.0, 0.1)
         glutSolidCube(1.0)
         glPopMatrix()
 
         # Draw leaves
-        glColor3f(0.0, 0.8, 0.0)  # Green
-        glTranslatef(0.0, 0.6, 0.0)
-        glutSolidSphere(0.3, 8, 8)
+        glColor3f(22/255, 113/255, 126/255)  # Green
+        glTranslatef(0.0, 1.75, 0.0)  # Move to top of trunk
+
+        num_fronds = 12
+        frond_length = 1.5
+
+        for i in range(num_fronds):
+            glPushMatrix()
+
+            # Random downward tilt between 20 to 45 degrees
+            downward_tilt = random.uniform(40, 45)
+
+            # Rotate downward first (X axis)
+            glRotatef(downward_tilt, 1, 0, 0)
+
+            # Then rotate around the trunk (Y axis)
+            glRotatef((360 / num_fronds) * i, 0, 1, 0)
+
+            glScalef(0.1, 0.1, frond_length)
+            glutSolidSphere(1.0, 6, 6)
+
+            glPopMatrix()
 
         glPopMatrix()
+
+
 
 def update_trees():
     global trees
@@ -263,7 +305,7 @@ def update_trees():
 
 def draw_desert_ground():
     glPushMatrix()
-    glColor3f(237/255,201/255,175/255)  # Sandy color
+    glColor3f(191/255,116/255,100/255)  # Sandy color
     glBegin(GL_QUADS)
     glVertex3f(-100.0, -0.06, player_z - 50.0)
     glVertex3f(100.0, -0.06, player_z - 50.0)
@@ -305,7 +347,7 @@ def draw_sunset():
 
     # Draw background sky (orange to purple)
     glBegin(GL_QUADS)
-    glColor3f(1.0, 0.5, 0.2)  # Bottom color (orange)
+    glColor3f(1.0, 0.5, 0.2)   # Bottom color (orange)
     glVertex3f(-100, -1.0, sunset_distance)
     glVertex3f(100, -1.0, sunset_distance)
     glColor3f(0.6, 0.0, 0.6)  # Top color (purple-ish)
@@ -314,7 +356,7 @@ def draw_sunset():
     glEnd()
 
     # Draw the sun
-    glColor3f(1.0, 0.9, 0.0)  # Yellow
+    glColor3f(254/255,212/255,153/255)  # Yellow
     glTranslatef(0.0, 1.0, sunset_distance - 0.5)  # (10 units high)
     glutSolidSphere(5.0, 32, 32) 
 
@@ -369,7 +411,7 @@ def draw_debris():
             glColor3f(0.3, 0.3, 0.3)
             glutSolidSphere(d["size"], 8, 8)
         elif d["type"] == "bone":
-            glColor3f(1.0, 1.0, 1.0)
+            glColor3f(102/255,51/255,0/255)
             glScalef(0.1, 0.1, 0.5)
             glutSolidCube(d["size"] * 10)
 
@@ -385,12 +427,12 @@ def update_debris():
 
         # Random left or right side
         side = random.choice([-1, 1])
-        x_pos = side * random.uniform(6.0, 15.0)
+        x_pos = side * random.uniform(3.0, 15.0)
 
         debris.append({
             "x": x_pos,
             "z": farthest_z,
-            "size": random.uniform(0.1, 0.3),
+            "size": random.uniform(0.1, 0.9),
             "type": random.choice(["rock", "bone"])
         })
 
