@@ -5,7 +5,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 trees = []
-tree_spacing = 2.0   # Distance between trees
+tree_spacing = 8.5  # Distance between trees
 max_tree_distance = 50.0  # How far ahead trees are generated
 day_time = 0.0
 day_speed = 0.001  # Speed of time change
@@ -120,24 +120,58 @@ def update_road():
 def draw_road():
     glPushMatrix()
     for segment in segments:
-        if int(segment["z_position"] / road_segment_length) % 2 == 0:
-            glColor3f(0.5, 0.5, 0.5)
-        else:
-            glColor3f(0.0, 0.5, 0.0)
+        is_road = int(segment["z_position"] / road_segment_length) % 2 == 0
 
+        if is_road:
+            glColor3f(0.5, 0.5, 0.5)  # Road color
+        else:
+            glColor3f(0.0, 0.5, 0.0)  # Grass color
+
+        # Draw road or grass
         glBegin(GL_QUADS)
         glVertex3f(-road_width / 2, -0.05, segment["z_position"])
         glVertex3f(road_width / 2, -0.05, segment["z_position"])
         glVertex3f(road_width / 2, -0.05, segment["z_position"] + road_segment_length)
         glVertex3f(-road_width / 2, -0.05, segment["z_position"] + road_segment_length)
         glEnd()
+
+        # Draw dashed white road markings across
+        if is_road:
+            glColor3f(1.0, 1.0, 1.0)  # White color
+            mark_width = 0.6           # Width of each mark
+            mark_thickness = 0.1       # Thickness in Z direction
+            mark_gap = 0.7             # Gap between marks
+
+            start_x = -road_width / 2 + mark_gap  # start a bit inside
+            end_x = road_width / 2 - mark_width - mark_gap  # end a bit inside
+
+            x = start_x
+            while x <= end_x:
+                glBegin(GL_QUADS)
+                glVertex3f(x, -0.04, segment["z_position"] + road_segment_length / 2 - mark_thickness / 2)
+                glVertex3f(x + mark_width, -0.04, segment["z_position"] + road_segment_length / 2 - mark_thickness / 2)
+                glVertex3f(x + mark_width, -0.04, segment["z_position"] + road_segment_length / 2 + mark_thickness / 2)
+                glVertex3f(x, -0.04, segment["z_position"] + road_segment_length / 2 + mark_thickness / 2)
+                glEnd()
+
+                x += mark_width + mark_gap
     glPopMatrix()
+
+
 
 def draw_player():
     glPushMatrix()
     glTranslatef(player_x, 0.0, player_z)
-    glColor3f(1.0, 1.0, 0.0)
-    glutSolidCube(player_size)
+    glRotatef(-90, 1, 0, 0)
+    glColor3f(1.0, 1.0, 1.0)
+    glutSolidCone(0.1,0.4,32,32)
+    glPopMatrix()
+    # player head
+    glPushMatrix()
+    glTranslatef(player_x,0.4,player_z)
+    glColor3f(1,1,1)
+    glutSolidSphere(0.080,32,32)
+    # glutSolidOctahedron()
     glPopMatrix()
 
 def rgbconv(r,g,b):
@@ -152,6 +186,7 @@ def draw_wheel(x, y, z, radius, rotation_angle):
     # Rotate the wheel to the desired orientation
     glPushMatrix()
     glTranslatef(x, y, z)  # Move to the wheel position
+    glColor3f(36/255, 75/255, 117/255)
     glRotatef(rotation_angle, 1, 0, 0)  # Rotate around the Y-axis (you can adjust axes as needed)
     draw_circle(0, 0, 0, radius)  # Draw the circle at the origin of the rotated position
     glPopMatrix()
@@ -178,7 +213,7 @@ def draw_vehicles():
         glPopMatrix()
         
         wheel_radius = 0.1
-        wheel_offset = 0.15  # Adjust the position as needed
+        wheel_offset = 0.2  # Adjust the position as needed
         wheel_rotation = 90
         draw_wheel(vehicle["x_position"] - wheel_offset, 0.03, vehicle["z_position"] - 0.35, wheel_radius, wheel_rotation)
         # Rear right wheel
