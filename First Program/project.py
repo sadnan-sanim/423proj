@@ -47,7 +47,7 @@ def init():
 
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(60, width / height, 0.1, 100)
+    gluPerspective(45, width / height, 0.4, 100)
     glMatrixMode(GL_MODELVIEW)
 
     for i in range(num_segments):
@@ -140,12 +140,46 @@ def draw_player():
     glutSolidCube(player_size)
     glPopMatrix()
 
+def rgbconv(r,g,b):
+    return (r/255,g/255,b/255)
 def draw_vehicles():
     for vehicle in vehicles:
+        sf=0.09
         glPushMatrix()
         glTranslatef(vehicle["x_position"], 0.0, vehicle["z_position"])
-        glColor3f(1.0, 0.0, 0.0)
-        glutSolidCube(vehicle_size)
+        # mainbody
+        
+        glColor3f(0.51,0.1,0.8)
+        glTranslatef(0.0,0.5,0.0)
+        glScalef(2.0,1.0,1.0)
+        glutSolidCube(0.4)
+        glPopMatrix()
+        # left part
+        
+        glPushMatrix()
+        glTranslatef(vehicle["x_position"], 0.0, vehicle["z_position"])
+        glColor3f(0.31,0.5,0.8)
+        glTranslatef(0.73,0.45,0.0)
+        glScalef(2.25,1.0,-2.5)
+        glutSolidCube(0.25)
+        glPopMatrix()
+        # right part
+        glPushMatrix()
+        glTranslatef(vehicle["x_position"], 0.0, vehicle["z_position"])
+        glColor3f(0.31,0.5,0.8)
+        glTranslatef(-0.7,0.45,0.0)
+        glScalef(2.25,1.0,-2.5)
+        glutSolidCube(0.25)
+        glPopMatrix()
+        # wheelone
+        glPushMatrix()
+        
+        glTranslatef(vehicle["x_position"], 0, vehicle["z_position"])
+        glColor3f(0.31,0.5,0.8)
+        quad=gluNewQuadric()
+        
+        gluCylinder(quad,sf*1.4,sf*1.4,sf*5,32,32)
+        
         glPopMatrix()
 
 def draw_trees():
@@ -356,9 +390,8 @@ def display():
     glLoadIdentity()
 
     cam_x = player_x
-    cam_y = 1.5
-    cam_z = player_z - 4.0
-
+    cam_y = 1
+    cam_z = player_z - 5
     gluLookAt(cam_x, cam_y, cam_z,
               player_x, 0.0, player_z,
               0.0, 1.0, 0.0)
