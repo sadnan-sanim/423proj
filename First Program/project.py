@@ -142,6 +142,19 @@ def draw_player():
 
 def rgbconv(r,g,b):
     return (r/255,g/255,b/255)
+def draw_circle(x, y, z, radius, slices=30):
+    glBegin(GL_POLYGON)
+    for i in range(slices):
+        angle = 2 * math.pi * i / slices
+        glVertex3f(x + radius * math.cos(angle), y, z + radius * math.sin(angle))
+    glEnd()
+def draw_wheel(x, y, z, radius, rotation_angle):
+    # Rotate the wheel to the desired orientation
+    glPushMatrix()
+    glTranslatef(x, y, z)  # Move to the wheel position
+    glRotatef(rotation_angle, 1, 0, 0)  # Rotate around the Y-axis (you can adjust axes as needed)
+    draw_circle(0, 0, 0, radius)  # Draw the circle at the origin of the rotated position
+    glPopMatrix()
 def draw_vehicles():
     for vehicle in vehicles:
         sf=0.09
@@ -149,38 +162,27 @@ def draw_vehicles():
         glTranslatef(vehicle["x_position"], 0.0, vehicle["z_position"])
         # mainbody
         
-        glColor3f(0.51,0.1,0.8)
-        glTranslatef(0.0,0.5,0.0)
-        glScalef(2.0,1.0,1.0)
+        glColor3f( 189/255,  67/255, 54/255)
+        glTranslatef(0.0,0,0.0)
+        glScalef(2,1.0,0.79)
         glutSolidCube(0.4)
         glPopMatrix()
         # left part
         
         glPushMatrix()
         glTranslatef(vehicle["x_position"], 0.0, vehicle["z_position"])
-        glColor3f(0.31,0.5,0.8)
-        glTranslatef(0.73,0.45,0.0)
-        glScalef(2.25,1.0,-2.5)
+        glColor3f(210/255, 209/255, 185/255)
+        glTranslatef(0,0.34,0)
+        glScalef(1.5,1.0,0.79)
         glutSolidCube(0.25)
         glPopMatrix()
-        # right part
-        glPushMatrix()
-        glTranslatef(vehicle["x_position"], 0.0, vehicle["z_position"])
-        glColor3f(0.31,0.5,0.8)
-        glTranslatef(-0.7,0.45,0.0)
-        glScalef(2.25,1.0,-2.5)
-        glutSolidCube(0.25)
-        glPopMatrix()
-        # wheelone
-        glPushMatrix()
         
-        glTranslatef(vehicle["x_position"], 0, vehicle["z_position"])
-        glColor3f(0.31,0.5,0.8)
-        quad=gluNewQuadric()
-        
-        gluCylinder(quad,sf*1.4,sf*1.4,sf*5,32,32)
-        
-        glPopMatrix()
+        wheel_radius = 0.1
+        wheel_offset = 0.15  # Adjust the position as needed
+        wheel_rotation = 90
+        draw_wheel(vehicle["x_position"] - wheel_offset, 0.03, vehicle["z_position"] - 0.35, wheel_radius, wheel_rotation)
+        # Rear right wheel
+        draw_wheel(vehicle["x_position"] + wheel_offset, 0.03, vehicle["z_position"] - 0.35, wheel_radius, wheel_rotation)
 
 def draw_trees():
     for tree in trees:
