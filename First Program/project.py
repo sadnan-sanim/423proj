@@ -590,11 +590,56 @@ def draw_score():
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 
+def draw_game_over():
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    gluOrtho2D(0, width, 0, height)  # Set up orthographic projection
+
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+    # Black background
+    glDisable(GL_DEPTH_TEST)
+    glColor3f(0.0, 0.0, 0.0)
+    glBegin(GL_QUADS)
+    glVertex2f(0, 0)
+    glVertex2f(width, 0)
+    glVertex2f(width, height)
+    glVertex2f(0, height)
+    glEnd()
+
+    # "YOU DIED" - Red text
+    glColor3f(1.0, 0.0, 0.0)
+    glRasterPos2f(width // 2 - 50, height // 2 + 10)
+    for c in "YOU DIED":
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(c))
+
+    # "PRESS R TO RESTART" - White text
+    glColor3f(1.0, 1.0, 1.0)
+    glRasterPos2f(width // 2 - 90, height // 2 - 20)
+    for c in "PRESS R TO RESTART":
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(c))
+
+    glEnable(GL_DEPTH_TEST)
+
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+    glPopMatrix()
+
 def display():
     global game_over,initial_zpos,distanceCovered,score,player_z,movementSpeed,vehicle_speed
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
+
+    if game_over:
+        draw_game_over()
+        glutSwapBuffers()
+        return 
+
     distanceCovered=player_z-initial_zpos
     player_z+=movementSpeed
     movementSpeed=min(movementSpeed+speed_increment,max_speed)
@@ -637,25 +682,34 @@ def display():
 
 
 def keyboard(key, x, y):
-    global player_x, player_z, bullets
+    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed
     key = key.decode("utf-8").lower()
 
-    if key == 'w':
-        player_z += move_speed
-    elif key == 's':
-        player_z -= move_speed
-    elif key == 'a':
-        player_x -= move_speed
-        # Clamp player inside left boundary
-        if player_x < -road_width / 2 + player_size / 2:
-            player_x = -road_width / 2 + player_size / 2
-    elif key == 'd':
-        player_x += move_speed
-        # Clamp player inside right boundary
-        if player_x > road_width / 2 - player_size / 2:
-            player_x = road_width / 2 - player_size / 2
-    elif key == ' ' and bullets > 0:
-        fire_bullet()
+    if game_over and key == 'r':
+        # Reset game state
+        player_x, player_z = 0.0, initial_zpos
+        bullets = 5
+        vehicles.clear()
+        distanceCovered = 0
+        game_over = False
+        return
+    if not game_over:
+        if key == 'w':
+            player_z += move_speed
+        elif key == 's':
+            player_z -= move_speed
+        elif key == 'a':
+            player_x -= move_speed
+            # Clamp player inside left boundary
+            if player_x < -road_width / 2 + player_size / 2:
+                player_x = -road_width / 2 + player_size / 2
+        elif key == 'd':
+            player_x += move_speed
+            # Clamp player inside right boundary
+            if player_x > road_width / 2 - player_size / 2:
+                player_x = road_width / 2 - player_size / 2
+        elif key == ' ' and bullets > 0:
+            fire_bullet()
 
     glutPostRedisplay()
 
