@@ -10,7 +10,8 @@ distanceCovered=0.0
 movementSpeed=0.01
 speed_increment=0.0001
 max_speed= 0.25
-coinCount=50
+coins= []
+coinCount= 0
 trees = []
 tree_spacing = 8.5  # Distance between trees
 max_tree_distance = 50.0  # How far ahead trees are generated
@@ -115,6 +116,10 @@ def update_road():
     # Spawn vehicles randomly
     if random.random() < 0.02:
         spawn_vehicle()
+
+    # Spawn coins randomly
+    if random.random() < 0.03:
+        spawn_coin_batch()
 
     # Update vehicle positions
     for vehicle in vehicles:
@@ -629,6 +634,46 @@ def draw_game_over():
     glMatrixMode(GL_MODELVIEW)
     glPopMatrix()
 
+def spawn_coin_batch():
+    eligible_segments = [s for s in segments if s["z_position"] > player_z + 5 and not s["vehicle_present"]]
+    if not eligible_segments:
+        return
+
+    segment = random.choice(eligible_segments)
+
+    batch_size = random.randint(2, 5)
+    gap = 0.5  # gap between coins on Z-axis
+
+    # Fixed x position across the batch (random horizontal lane on road)
+    x_pos = random.uniform(-road_width / 2 + 0.5, road_width / 2 - 0.5)
+    z_start = segment["z_position"] + random.uniform(0, road_segment_length)
+
+    for i in range(batch_size):
+        z = z_start + i * gap 
+        coins.append({
+            "x": x_pos,
+            "z": z,
+            "collected": False
+        })
+
+def draw_coins():
+    for coin in coins:
+        if not coin["collected"]:
+            glPushMatrix()
+            glTranslatef(coin["x"], 0.2, coin["z"])
+            glColor3f(1.0, 0.84, 0.0)
+            glutSolidSphere(0.1, 16, 16)
+            glPopMatrix()
+
+def coin_collision():
+    global coinCount
+    for coin in coins:
+        if not coin["collected"]:
+            if abs(player_x - coin["x"]) < 0.25 and abs(player_z - coin["z"]) < 0.25:
+                coin["collected"] = True
+                coinCount += 1
+                print(f"Coins collected: {coinCount}")
+
 def display():
     global game_over,initial_zpos,distanceCovered,score,player_z,movementSpeed,vehicle_speed
 
@@ -674,6 +719,8 @@ def display():
     draw_road()
     draw_vehicles()
     draw_player()
+    draw_coins()
+    coin_collision()
     draw_mouse_coords()
     draw_distance()
     draw_score()
