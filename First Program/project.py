@@ -9,7 +9,7 @@ initial_zpos=2.0
 distanceCovered=0.0
 movementSpeed=0.01
 speed_increment=0.0001
-max_speed=1
+max_speed= 0.5
 
 trees = []
 tree_spacing = 8.5  # Distance between trees
@@ -682,13 +682,16 @@ def display():
 
 
 def keyboard(key, x, y):
-    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed
+    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed, movementSpeed, speed_increment, segments
     key = key.decode("utf-8").lower()
 
     if game_over and key == 'r':
         # Reset game state
-        player_x, player_z = 0.0, initial_zpos
+        player_x= 0.0
+        player_z = 1000.0
         bullets = 5
+        movementSpeed=0.01
+        speed_increment=0.0001
         vehicles.clear()
         distanceCovered = 0
         game_over = False
@@ -696,15 +699,13 @@ def keyboard(key, x, y):
     if not game_over:
         if key == 'w':
             player_z += move_speed
-        elif key == 's':
-            player_z -= move_speed
         elif key == 'a':
-            player_x -= move_speed
+            player_x += move_speed
             # Clamp player inside left boundary
             if player_x < -road_width / 2 + player_size / 2:
                 player_x = -road_width / 2 + player_size / 2
         elif key == 'd':
-            player_x += move_speed
+            player_x -= move_speed
             # Clamp player inside right boundary
             if player_x > road_width / 2 - player_size / 2:
                 player_x = road_width / 2 - player_size / 2
