@@ -779,15 +779,13 @@ def keyboard(key, x, y):
         if key == 'w':
             player_z += move_speed
         elif key == 'a':
-            player_x += move_speed
-            # Clamp player inside left boundary
-            if player_x < -road_width / 2 + player_size / 2:
-                player_x = -road_width / 2 + player_size / 2
-        elif key == 'd':
-            player_x -= move_speed
-            # Clamp player inside right boundary
+            player_x += move_speed  
             if player_x > road_width / 2 - player_size / 2:
                 player_x = road_width / 2 - player_size / 2
+        elif key == 'd':
+            player_x -= move_speed  
+            if player_x < -road_width / 2 + player_size / 2:
+                player_x = -road_width / 2 + player_size / 2
         elif key == ' ' and bullets > 0:
             fire_bullet()
         # Powerup 1: Increase bullet count by 1 (key: J)
