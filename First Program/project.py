@@ -4,7 +4,9 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18
-
+active_bullets = []  # List to store active bullets
+bullet_speed = 0.4   # Speed of the bullet
+bullet_size = 0.1    # Size of the bullet
 initial_zpos=2.0
 distanceCovered=0.0
 movementSpeed=0.01
@@ -118,7 +120,7 @@ def update_road():
         spawn_vehicle()
 
     # Spawn coins randomly
-    if random.random() < 0.03:
+    if random.random() < 0.015:
         spawn_coin_batch()
 
     # Update vehicle positions
@@ -157,6 +159,25 @@ def draw_starting():
     glVertex3f(200,0,0)
     glEnd()
     glPopMatrix()
+def update_bullets():
+    global active_bullets, vehicles
+
+    # Move bullets forward
+    for bullet in active_bullets:
+        bullet["z_position"] += bullet_speed
+
+    # Check for collisions with vehicles
+    for bullet in active_bullets[:]:
+        for vehicle in vehicles[:]:
+            if abs(bullet["x_position"] - vehicle["x_position"]) < vehicle_size / 2 and \
+               abs(bullet["z_position"] - vehicle["z_position"]) < vehicle_size / 2:
+                vehicles.remove(vehicle)  # Remove the hit vehicle
+                active_bullets.remove(bullet)  # Remove the bullet
+                print("Shot a car!")
+                break
+
+    # Remove bullets that go out of bounds
+    active_bullets = [b for b in active_bullets if b["z_position"] < player_z + visible_range]
 def draw_road():
     draw_starting()
     glPushMatrix()
@@ -456,7 +477,15 @@ def draw_mountain_range():
 #     day_time += day_speed
 #     if day_time > 2 * math.pi:
 #         day_time -= 2 * math.pi
+def draw_bullets():
+    global active_bullets
 
+    glColor3f(204/255, 0, 0.0)  # Bright Yellow color
+    for bullet in active_bullets:
+        glPushMatrix()
+        glTranslatef(bullet["x_position"], 0.2, bullet["z_position"])  # Adjust height
+        glutSolidSphere(bullet_size, 16, 16)  # Draw the bullet as a sphere
+        glPopMatrix()
 def draw_debris():
     for d in debris:
         glPushMatrix()
@@ -516,35 +545,24 @@ def draw_mouse_coords():
     glMatrixMode(GL_MODELVIEW)
 
 def fire_bullet():
-    global bullets, vehicles, game_over
+    global bullets, active_bullets, game_over
+
+    
 
 
-    # Find the nearest vehicle directly ahead (small x-axis difference)
-    closest_vehicle = None
-    min_distance = float('inf')
+    # Add a new bullet at the player's position
+    active_bullets.append({
+        "x_position": player_x,
+        "z_position": player_z + 0.5,  # Slightly ahead of the player
+    })
 
-    for vehicle in vehicles:
-        # Check if vehicle is roughly in the same lane (small x-difference allowed)
-        if abs(vehicle["x_position"] - player_x) < 0.5:
-            # Check if vehicle is ahead of the player
-            if vehicle["z_position"] > player_z:
-                distance = vehicle["z_position"] - player_z
-                if distance < min_distance:
-                    min_distance = distance
-                    closest_vehicle = vehicle
-
-    if closest_vehicle:
-        vehicles.remove(closest_vehicle)  # Remove the hit vehicle
-        print("Shot a car!")
-    else:
-        print("Missed! No car ahead!")
-
-    bullets -= 1  # Always reduce a bullet after shooting
+    bullets -= 1  # Reduce the bullet count
     print(f"Bullets left: {bullets}")
 
     # Check if bullets are finished
     if bullets == 0:
         print("No bullets left!")
+          
         
 
 
@@ -719,7 +737,10 @@ def display():
     draw_road()
     draw_vehicles()
     draw_player()
+    update_bullets()
+    draw_bullets()
     draw_coins()
+    
     coin_collision()
     draw_mouse_coords()
     draw_distance()
@@ -741,7 +762,7 @@ def keyboard(key, x, y):
         vehicles.clear()
         distanceCovered = 0
         game_over = False
-        coinCount=50
+        coinCount=0
         trees.clear()
         update_trees()
         segments.clear()
@@ -771,7 +792,7 @@ def keyboard(key, x, y):
             fire_bullet()
         # Powerup 1: Increase bullet count by 1 (key: J)
         elif key == 'j':
-            if coinCount >= 5:
+            if coinCount >= 10:
                 bullets += 1
                 coinCount -= 5
                 print("Powerup Activated: +1 Bullet")
@@ -780,7 +801,7 @@ def keyboard(key, x, y):
 
         # Powerup 2: Halve movement speed (key: K)
         elif key == 'k':
-            if coinCount >= 10:
+            if coinCount >= 40:
                 movementSpeed = movementSpeed / 2
                 coinCount -= 10
                 print("Powerup Activated: Halved Speed")
@@ -789,7 +810,7 @@ def keyboard(key, x, y):
 
         # Powerup 3: Bomb - Destroy vehicles in range (key: L)
         elif key == 'l':
-            if coinCount >= 20:
+            if coinCount >= 100:
                 bomb_radius = 10.0  # Define radius around player
                 vehicles[:] = [v for v in vehicles if math.hypot(v["x_position"] - player_x, v["z_position"] - player_z) > bomb_radius]
                 coinCount -= 20
