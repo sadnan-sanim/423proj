@@ -484,13 +484,6 @@ def draw_mouse_coords():
 def fire_bullet():
     global bullets, vehicles, game_over
 
-    if game_over:
-        return  # Do nothing if the game is over
-
-    if bullets <= 0:
-        print("No bullets left! Game Over!")
-        game_over = True  # Set the game_over flag
-        return  # Stop further execution
 
     # Find the nearest vehicle directly ahead (small x-axis difference)
     closest_vehicle = None
@@ -517,8 +510,8 @@ def fire_bullet():
 
     # Check if bullets are finished
     if bullets == 0:
-        print("No bullets left! Game Over!")
-        game_over = True  # Set the game_over flag
+        print("No bullets left!")
+        
 
 
 def mouse_motion(x, y):
@@ -607,7 +600,7 @@ def keyboard(key, x, y):
         # Clamp player inside right boundary
         if player_x > road_width / 2 - player_size / 2:
             player_x = road_width / 2 - player_size / 2
-    elif key == ' ':
+    elif key == ' ' and bullets > 0:
         fire_bullet()
 
     glutPostRedisplay()
