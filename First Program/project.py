@@ -7,6 +7,9 @@ from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18
 
 initial_zpos=2.0
 distanceCovered=0.0
+movementSpeed=0.01
+speed_increment=0.0001
+max_speed=1
 
 trees = []
 tree_spacing = 8.5  # Distance between trees
@@ -41,7 +44,7 @@ vehicles = []
 
 # Vehicle parameters
 vehicle_size = 0.4
-vehicle_speed = 0.05
+vehicle_speed = 2
 
 # Mouse coordinates
 mouse_x, mouse_y = 0, 0
@@ -336,28 +339,7 @@ def draw_desert_ground():
     glPopMatrix()
 
 
-def draw_mountains():
-    glPushMatrix()
-    glDisable(GL_LIGHTING)
 
-    mountain_base = player_z + 55  # Near the sunset
-    glColor3f(0.4, 0.3, 0.2)  # Brownish
-
-    glBegin(GL_TRIANGLES)
-    random.seed(0)  # Fixed seed for consistent mountains
-
-    for i in range(-100, 100, 20):
-        peak_x = i + random.randint(-5, 5)
-        peak_height = random.uniform(5, 10)
-
-        # Left triangle
-        glVertex3f(i, 0.0, mountain_base)
-        glVertex3f(i + 20, 0.0, mountain_base)
-        glVertex3f(peak_x + 10, peak_height, mountain_base)
-    glEnd()
-
-    glEnable(GL_LIGHTING)
-    glPopMatrix()
 
 def draw_sunset():
     glPushMatrix()
@@ -382,7 +364,54 @@ def draw_sunset():
     glutSolidSphere(5.0, 32, 32) 
 
     glPopMatrix()
+def draw_mountain(x, y, z):
+    glPushMatrix()
+    glTranslatef(x, y, z)
+    glScalef(3.0, 3.0, 1.0)
 
+    glDisable(GL_DEPTH_TEST)  # <-- temporarily disable depth test
+
+    # Base layer - top lightest
+    glColor3f(102/255, 49/255, 8/255)
+    glBegin(GL_TRIANGLES)
+    glVertex3f(-1.0, 0.0, 0.0)
+    glVertex3f(1.0, 0.0, 0.0)
+    glVertex3f(0.0, 1.0, 0.0)
+    glEnd()
+
+    # Middle layer - medium
+    glColor3f(93/255, 45/255, 8/255)
+    glBegin(GL_TRIANGLES)
+    glVertex3f(-0.8, 0.0, 0.01)
+    glVertex3f(0.8, 0.0, 0.01)
+    glVertex3f(0.0, 0.8, 0.01)
+    glEnd()
+
+    # Top layer - darkest
+    glColor3f(79/255, 45/255, 8/255)
+    glBegin(GL_TRIANGLES)
+    glVertex3f(-0.5, 0.0, 0.02)
+    glVertex3f(0.5, 0.0, 0.02)
+    glVertex3f(0.0, 0.5, 0.02)
+    glEnd()
+
+    glEnable(GL_DEPTH_TEST)  # <-- re-enable depth test
+
+    glPopMatrix()
+
+
+
+
+def draw_mountain_range():
+    global player_x,player_y
+    spacing = 5
+    z_base = player_z + 50  # far in the background
+
+    for i in range(-100, 101, spacing):
+        
+        if i >5 or i<-5:
+            draw_mountain(i, 0.0, z_base )  # slight z jitter for depth
+        
 # def draw_sunset():
 #     global day_time
 
@@ -540,15 +569,38 @@ def draw_distance():
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 
+def draw_score():
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    gluOrtho2D(0, width, 0, height)
+
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+    glColor3f(1.0, 1.0, 0.0)
+    score_text = f"Score: {score}"
+    glRasterPos2f(10, height - 50)
+    for ch in score_text:
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
 
 def display():
-    global game_over,initial_zpos,distanceCovered,score
+    global game_over,initial_zpos,distanceCovered,score,player_z,movementSpeed,vehicle_speed
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
     distanceCovered=player_z-initial_zpos
-    
-    print(score)
+    player_z+=movementSpeed
+    movementSpeed=min(movementSpeed+speed_increment,max_speed)
+    score=int(distanceCovered/10)
+    # vehicle_speed+=speed_increment
+    # vehicle_speed=min(vehicle_speed,1)
     if game_over:
         # Display "Game Over" message
         glColor3f(1.0, 0.0, 0.0)  # Red color
@@ -566,6 +618,7 @@ def display():
               0.0, 1.0, 0.0)
 
     draw_sunset()
+    draw_mountain_range()
     draw_desert_ground()
     update_debris()
     draw_debris()
@@ -578,6 +631,7 @@ def display():
     draw_player()
     draw_mouse_coords()
     draw_distance()
+    draw_score()
     glutSwapBuffers()
 
 
