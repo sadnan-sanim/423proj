@@ -3,6 +3,7 @@ import math
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18
 
 trees = []
 tree_spacing = 8.5  # Distance between trees
@@ -12,6 +13,7 @@ day_speed = 0.001  # Speed of time change
 debris = []
 debris_spawn_distance = 30.0
 debris_spacing = 3.0
+game_over = False
 
 # Window size
 width, height = 800, 600
@@ -87,11 +89,16 @@ def spawn_vehicle():
     })
 
 def update_road():
-    global segments, vehicles
+    global segments, vehicles, player_x, player_z, game_over
 
+    if game_over:
+        return  # Stop updating if the game is over
+
+    # Remove road segments that are too far behind
     if segments[0]["z_position"] + road_segment_length < player_z - visible_range:
         segments.pop(0)
 
+    # Add new road segments ahead
     if segments[-1]["z_position"] < player_z + visible_range:
         segments.append({
             "z_position": segments[-1]["z_position"] + road_segment_length,
@@ -99,23 +106,34 @@ def update_road():
             "vehicle_present": False
         })
 
+    # Spawn vehicles randomly
     if random.random() < 0.02:
         spawn_vehicle()
 
+    # Update vehicle positions
     for vehicle in vehicles:
         if vehicle["direction"] == "left":
             vehicle["x_position"] -= vehicle["speed"]
         else:
             vehicle["x_position"] += vehicle["speed"]
 
-    # Remove vehicles out of bounds
-    vehicles = [v for v in vehicles if (-road_width/2 - vehicle_size) <= v["x_position"] <= (road_width/2 + vehicle_size)]
+    # Remove vehicles that are out of bounds
+    vehicles = [v for v in vehicles if (-road_width / 2 - vehicle_size) <= v["x_position"] <= (road_width / 2 + vehicle_size)]
 
     # Update segment vehicle flags
     for segment in segments:
         segment["vehicle_present"] = any(
             abs(v["z_position"] - segment["z_position"]) < 0.01 for v in vehicles
         )
+
+    # Check for collision with the player
+    for vehicle in vehicles:
+        if abs(vehicle["x_position"] - player_x) < (vehicle_size / 2 + player_size / 2) and \
+           abs(vehicle["z_position"] - player_z) < (vehicle_size / 2 + player_size / 2):
+            print("Game Over! The player was hit by a car.")
+            game_over = True  # Set the game_over flag
+            return  # Stop further updates
+        
 def draw_starting():
     glPushMatrix()
     glColor3f(48/255,93/255,75/255)
@@ -460,6 +478,46 @@ def draw_mouse_coords():
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
 
+def fire_bullet():
+    global bullets, vehicles, game_over
+
+    if game_over:
+        return  # Do nothing if the game is over
+
+    if bullets <= 0:
+        print("No bullets left! Game Over!")
+        game_over = True  # Set the game_over flag
+        return  # Stop further execution
+
+    # Find the nearest vehicle directly ahead (small x-axis difference)
+    closest_vehicle = None
+    min_distance = float('inf')
+
+    for vehicle in vehicles:
+        # Check if vehicle is roughly in the same lane (small x-difference allowed)
+        if abs(vehicle["x_position"] - player_x) < 0.5:
+            # Check if vehicle is ahead of the player
+            if vehicle["z_position"] > player_z:
+                distance = vehicle["z_position"] - player_z
+                if distance < min_distance:
+                    min_distance = distance
+                    closest_vehicle = vehicle
+
+    if closest_vehicle:
+        vehicles.remove(closest_vehicle)  # Remove the hit vehicle
+        print("Shot a car!")
+    else:
+        print("Missed! No car ahead!")
+
+    bullets -= 1  # Always reduce a bullet after shooting
+    print(f"Bullets left: {bullets}")
+
+    # Check if bullets are finished
+    if bullets == 0:
+        print("No bullets left! Game Over!")
+        game_over = True  # Set the game_over flag
+
+
 def mouse_motion(x, y):
     global mouse_x, mouse_y
     mouse_x = x
@@ -467,8 +525,19 @@ def mouse_motion(x, y):
     glutPostRedisplay()
 
 def display():
+    global game_over
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
+
+    if game_over:
+        # Display "Game Over" message
+        glColor3f(1.0, 0.0, 0.0)  # Red color
+        glRasterPos2f(-0.2, 0.0)  # Position the text
+        for ch in "GAME OVER":
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+        glutSwapBuffers()
+        return  # Stop further rendering
 
     cam_x = player_x
     cam_y = 1
@@ -478,7 +547,6 @@ def display():
               0.0, 1.0, 0.0)
 
     draw_sunset()
-    # draw_mountains() 
     draw_desert_ground()
     update_debris()
     draw_debris()
@@ -513,9 +581,8 @@ def keyboard(key, x, y):
         # Clamp player inside right boundary
         if player_x > road_width / 2 - player_size / 2:
             player_x = road_width / 2 - player_size / 2
-    elif key == ' ' and bullets > 0:
-        bullets -= 1
-        print("Used bullet! Remaining:", bullets)
+    elif key == ' ':
+        fire_bullet()
 
     glutPostRedisplay()
 
