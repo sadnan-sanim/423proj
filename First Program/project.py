@@ -10,7 +10,7 @@ distanceCovered=0.0
 movementSpeed=0.01
 speed_increment=0.0001
 max_speed= 0.5
-
+coinCount=50
 trees = []
 tree_spacing = 8.5  # Distance between trees
 max_tree_distance = 50.0  # How far ahead trees are generated
@@ -682,20 +682,31 @@ def display():
 
 
 def keyboard(key, x, y):
-    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed, movementSpeed, speed_increment, segments
+    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed, movementSpeed, speed_increment, segments,coinCount
     key = key.decode("utf-8").lower()
 
     if game_over and key == 'r':
-        # Reset game state
-        player_x= 0.0
-        player_z = 1000.0
+        player_x = 0.0
+        player_z = initial_zpos
         bullets = 5
-        movementSpeed=0.01
-        speed_increment=0.0001
+        movementSpeed = 0.01
+        speed_increment = 0.0001
         vehicles.clear()
         distanceCovered = 0
         game_over = False
+        coinCount=50
+        trees.clear()
+        update_trees()
+        segments.clear()
+        for i in range(num_segments):
+            segments.append({
+                "z_position": i * road_segment_length,
+                "active": True,
+                "vehicle_present": False
+            })
+
         return
+
     if not game_over:
         if key == 'w':
             player_z += move_speed
@@ -711,6 +722,34 @@ def keyboard(key, x, y):
                 player_x = road_width / 2 - player_size / 2
         elif key == ' ' and bullets > 0:
             fire_bullet()
+        # Powerup 1: Increase bullet count by 1 (key: J)
+        elif key == 'j':
+            if coinCount >= 5:
+                bullets += 1
+                coinCount -= 5
+                print("Powerup Activated: +1 Bullet")
+            else:
+                print("Not enough coins for Bullet Powerup!")
+
+        # Powerup 2: Halve movement speed (key: K)
+        elif key == 'k':
+            if coinCount >= 10:
+                movementSpeed = movementSpeed / 2
+                coinCount -= 10
+                print("Powerup Activated: Halved Speed")
+            else:
+                print("Not enough coins for Slowdown Powerup!")
+
+        # Powerup 3: Bomb - Destroy vehicles in range (key: L)
+        elif key == 'l':
+            if coinCount >= 20:
+                bomb_radius = 10.0  # Define radius around player
+                vehicles[:] = [v for v in vehicles if math.hypot(v["x_position"] - player_x, v["z_position"] - player_z) > bomb_radius]
+                coinCount -= 20
+                print("Powerup Activated: Bomb!")
+            else:
+                print("Not enough coins for Bomb Powerup!")
+
 
     glutPostRedisplay()
 
