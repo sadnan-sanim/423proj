@@ -5,6 +5,9 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18
 
+initial_zpos=2.0
+distanceCovered=0.0
+
 trees = []
 tree_spacing = 8.5  # Distance between trees
 max_tree_distance = 50.0  # How far ahead trees are generated
@@ -14,7 +17,7 @@ debris = []
 debris_spawn_distance = 30.0
 debris_spacing = 3.0
 game_over = False
-
+score=0
 # Window size
 width, height = 800, 600
 
@@ -523,13 +526,36 @@ def mouse_motion(x, y):
     mouse_x = x
     mouse_y = height - y  # Flip Y to match OpenGL's bottom-left origin
     glutPostRedisplay()
+def draw_distance():
+    glMatrixMode(GL_PROJECTION)
+    glPushMatrix()
+    glLoadIdentity()
+    gluOrtho2D(0, width, 0, height)
+
+    glMatrixMode(GL_MODELVIEW)
+    glPushMatrix()
+    glLoadIdentity()
+
+    glColor3f(1.0, 1.0, 1.0)
+    distance_text = f"Distance: {int(distanceCovered)}"
+    glRasterPos2f(10, height - 30)
+    for ch in distance_text:
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+
+    glPopMatrix()
+    glMatrixMode(GL_PROJECTION)
+    glPopMatrix()
+    glMatrixMode(GL_MODELVIEW)
+
 
 def display():
-    global game_over
+    global game_over,initial_zpos,distanceCovered,score
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
-
+    distanceCovered=player_z-initial_zpos
+    
+    print(score)
     if game_over:
         # Display "Game Over" message
         glColor3f(1.0, 0.0, 0.0)  # Red color
@@ -558,7 +584,7 @@ def display():
     draw_vehicles()
     draw_player()
     draw_mouse_coords()
-
+    draw_distance()
     glutSwapBuffers()
 
 
