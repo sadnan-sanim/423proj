@@ -9,7 +9,7 @@ bullet_speed = 0.4   # Speed of the bullet
 bullet_size = 0.1    # Size of the bullet
 initial_zpos=2.0
 distanceCovered=0.0
-movementSpeed=0.01
+movementSpeed=0.001
 speed_increment=0.0001
 max_speed= 0.25
 coins= []
@@ -65,7 +65,8 @@ def init():
         segments.append({
             "z_position": i * road_segment_length,
             "active": True,
-            "vehicle_present": False
+            "vehicle_present": False,
+            "coin_present": False
         })
 
 
@@ -112,7 +113,8 @@ def update_road():
         segments.append({
             "z_position": segments[-1]["z_position"] + road_segment_length,
             "active": True,
-            "vehicle_present": False
+            "vehicle_present": False,
+            "coin_present": False
         })
 
     # Spawn vehicles randomly
@@ -288,8 +290,6 @@ def draw_vehicles():
         # Rear right wheel
         draw_wheel(vehicle["x_position"] + wheel_offset, 0.03, vehicle["z_position"] - 0.35, wheel_radius, wheel_rotation)
 
-import random
-
 def draw_trees():
     for tree in trees:
         glPushMatrix()
@@ -438,45 +438,7 @@ def draw_mountain_range():
         if i >5 or i<-5:
             draw_mountain(i, 0.0, z_base )  # slight z jitter for depth
         
-# def draw_sunset():
-#     global day_time
 
-#     glPushMatrix()
-#     glDisable(GL_LIGHTING)
-
-#     # Animate sky color
-#     sky_r = 0.2 + 0.8 * abs(math.sin(day_time))
-#     sky_g = 0.4 + 0.4 * abs(math.sin(day_time))
-#     sky_b = 0.8 * abs(math.cos(day_time))
-
-#     sunset_distance = player_z + 60.0
-
-#     glBegin(GL_QUADS)
-#     glColor3f(sky_r, sky_g, sky_b)  # Bottom
-#     glVertex3f(-100, -1.0, sunset_distance)
-#     glVertex3f(100, -1.0, sunset_distance)
-
-#     glColor3f(sky_r * 0.5, sky_g * 0.5, sky_b * 0.5)  # Top
-#     glVertex3f(100, 40.0, sunset_distance)
-#     glVertex3f(-100, 40.0, sunset_distance)
-#     glEnd()
-
-#     # Draw the sun/moon
-#     if sky_b > 0.5:  # Daytime
-#         glColor3f(1.0, 1.0, 0.0)  # Sun: yellow
-#     else:
-#         glColor3f(1.0, 1.0, 1.0)  # Moon: white
-
-#     glTranslatef(0.0, 10.0, sunset_distance - 0.5)
-#     glutSolidSphere(2.5, 32, 32)
-
-#     glEnable(GL_LIGHTING)
-#     glPopMatrix()
-
-#     # Update time
-#     day_time += day_speed
-#     if day_time > 2 * math.pi:
-#         day_time -= 2 * math.pi
 def draw_bullets():
     global active_bullets
 
@@ -486,6 +448,7 @@ def draw_bullets():
         glTranslatef(bullet["x_position"], 0.2, bullet["z_position"])  # Adjust height
         glutSolidSphere(bullet_size, 16, 16)  # Draw the bullet as a sphere
         glPopMatrix()
+
 def draw_debris():
     for d in debris:
         glPushMatrix()
@@ -547,9 +510,6 @@ def draw_mouse_coords():
 def fire_bullet():
     global bullets, active_bullets, game_over
 
-    
-
-
     # Add a new bullet at the player's position
     active_bullets.append({
         "x_position": player_x,
@@ -571,6 +531,8 @@ def mouse_motion(x, y):
     mouse_x = x
     mouse_y = height - y  # Flip Y to match OpenGL's bottom-left origin
     glutPostRedisplay()
+
+
 def draw_distance():
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
@@ -653,18 +615,26 @@ def draw_game_over():
     glPopMatrix()
 
 def spawn_coin_batch():
-    eligible_segments = [s for s in segments if s["z_position"] > player_z + 5 and not s["vehicle_present"]]
+    global coins
+
+    eligible_segments = [
+        s for s in segments
+        if int(s["z_position"] / road_segment_length) % 2 == 0
+        and not s["coin_present"]
+        and not s["vehicle_present"]
+        and s["z_position"] > player_z
+    ]
+
     if not eligible_segments:
         return
 
     segment = random.choice(eligible_segments)
+    segment["coin_present"] = True  # Mark this segment
 
     batch_size = random.randint(2, 5)
     gap = 0.5  # gap between coins on Z-axis
-
-    # Fixed x position across the batch (random horizontal lane on road)
     x_pos = random.uniform(-road_width / 2 + 0.5, road_width / 2 - 0.5)
-    z_start = segment["z_position"] + random.uniform(0, road_segment_length)
+    z_start = segment["z_position"] + road_segment_length / 2
 
     for i in range(batch_size):
         z = z_start + i * gap 
@@ -757,20 +727,22 @@ def keyboard(key, x, y):
         player_x = 0.0
         player_z = initial_zpos
         bullets = 5
-        movementSpeed = 0.01
+        movementSpeed = 0.001
         speed_increment = 0.0001
         vehicles.clear()
-        distanceCovered = 0
+        distanceCovered = 0.0
         game_over = False
-        coinCount=0
+        coinCount = 0
+        coins.clear()
         trees.clear()
-        update_trees()
+        debris.clear()
         segments.clear()
         for i in range(num_segments):
             segments.append({
                 "z_position": i * road_segment_length,
                 "active": True,
-                "vehicle_present": False
+                "vehicle_present": False,
+                "coin_present": False
             })
 
         return
@@ -790,16 +762,18 @@ def keyboard(key, x, y):
             fire_bullet()
         # Powerup 1: Increase bullet count by 1 (key: J)
         elif key == 'j':
-            if coinCount >= 10:
+            if coinCount >= 5 and bullets < 5:
                 bullets += 1
                 coinCount -= 5
                 print("Powerup Activated: +1 Bullet")
+            elif bullets >= 5:
+                print("Max bullets reached!")
             else:
                 print("Not enough coins for Bullet Powerup!")
 
         # Powerup 2: Halve movement speed (key: K)
         elif key == 'k':
-            if coinCount >= 40:
+            if coinCount >= 10:
                 movementSpeed = movementSpeed / 2
                 coinCount -= 10
                 print("Powerup Activated: Halved Speed")
@@ -808,7 +782,7 @@ def keyboard(key, x, y):
 
         # Powerup 3: Bomb - Destroy vehicles in range (key: L)
         elif key == 'l':
-            if coinCount >= 100:
+            if coinCount >= 20:
                 bomb_radius = 10.0  # Define radius around player
                 vehicles[:] = [v for v in vehicles if math.hypot(v["x_position"] - player_x, v["z_position"] - player_z) > bomb_radius]
                 coinCount -= 20
