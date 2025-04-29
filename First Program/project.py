@@ -34,7 +34,7 @@ bullets = 5
 
 # Road and pavement dimensions
 road_segment_length = 4.0
-road_width = 5.5
+road_width = 5.3
 num_segments = 10
 visible_range = 60.0
 
