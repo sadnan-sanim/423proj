@@ -184,8 +184,11 @@ def update_bullets():
     # Check for collisions with vehicles
     for bullet in active_bullets[:]:
         for vehicle in vehicles[:]:
-            if abs(bullet["x_position"] - vehicle["x_position"]) < vehicle_size / 2 and \
-               abs(bullet["z_position"] - vehicle["z_position"]) < vehicle_size / 2:
+            # Increase the collision window by adding a range factor
+            collision_range = 0.2  # Increase this value to expand the collision detection range
+
+            if abs(bullet["x_position"] - vehicle["x_position"]) < (vehicle_size / 2 + collision_range) and \
+               abs(bullet["z_position"] - vehicle["z_position"]) < (vehicle_size / 2 + collision_range):
                 vehicles.remove(vehicle)  # Remove the hit vehicle
                 active_bullets.remove(bullet)  # Remove the bullet
                 print("Shot a car!")
@@ -193,6 +196,7 @@ def update_bullets():
 
     # Remove bullets that go out of bounds
     active_bullets = [b for b in active_bullets if b["z_position"] < player_z + visible_range]
+
 def draw_road():
     draw_starting()
     glPushMatrix()
@@ -857,6 +861,7 @@ def display():
     teapot_collision()  # Check for teapot collision
     draw_teapot()
     # Draw power-up keys
+    # draw_powerup_circle()
     draw_powerup_keys()
     glutSwapBuffers()
 
