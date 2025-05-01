@@ -556,10 +556,25 @@ def draw_distance():
     glPushMatrix()
     glLoadIdentity()
 
-    glColor3f(1.0, 1.0, 1.0)
-    distance_text = f"Distance: {int(distanceCovered)}"
-    glRasterPos2f(10, height - 30)
-    for ch in distance_text:
+    # # Display distance
+    # glColor3f(1.0, 1.0, 1.0)
+    # distance_text = f"Distance: {int(distanceCovered)}"
+    # glRasterPos2f(10, height - 30)
+    # for ch in distance_text:
+    #     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+
+    # Display coins
+    glColor3f(1.0, 1.0, 0.0)  # Yellow color for coins
+    coins_text = f"Coins: {coinCount}"
+    glRasterPos2f(10, height - 25)
+    for ch in coins_text:
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+
+    # Display bullets
+    glColor3f(0.0, 1.0, 0.0)  # Red color for bullets
+    bullets_text = f"Bullets: {bullets}"
+    glRasterPos2f(10, height - 75)
+    for ch in bullets_text:
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
 
     glPopMatrix()
