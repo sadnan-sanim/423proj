@@ -31,6 +31,7 @@ debris = []
 debris_spawn_distance = 30.0
 debris_spacing = 3.0
 game_over = False
+camera_mode = "third" 
 score=0
 # Window size
 width, height = 800, 600
@@ -127,7 +128,7 @@ def update_road():
         })
 
     # Spawn vehicles randomly
-    spawn_chance = min(0.02 + score * 0.0005, 0.2)  # Max cap to avoid overload
+    spawn_chance = min(0.02 + score * 0.0005, 0.1)  # Max cap to avoid overload
     if random.random() < spawn_chance:
         if spawn_chance>0.1:
             print("BRUHHHHHH")
@@ -828,12 +829,21 @@ def display():
         glutSwapBuffers()
         return  # Stop further rendering
 
-    cam_x = player_x
-    cam_y = 1
-    cam_z = player_z - 5
-    gluLookAt(cam_x, cam_y, cam_z,
-              player_x, 0.0, player_z,
-              0.0, 1.0, 0.0)
+    if camera_mode == "third":
+        cam_x = player_x
+        cam_y = 1.5
+        cam_z = player_z - 5
+        gluLookAt(cam_x, cam_y, cam_z,
+                player_x, 0.0, player_z,
+                0.0, 1.0, 0.0)
+    else:  
+        cam_x = player_x
+        cam_y = 0.5
+        cam_z = player_z + 0.1  
+        look_z = player_z + 5.0
+        gluLookAt(cam_x, cam_y, cam_z,
+                cam_x, cam_y, look_z,
+                0.0, 1.0, 0.0)
 
     draw_sunset()
     draw_mountain_range()
@@ -868,7 +878,7 @@ def display():
 
 
 def keyboard(key, x, y):
-    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed, movementSpeed, speed_increment, segments,coinCount
+    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed, movementSpeed, speed_increment, segments,coinCount, camera_mode
     key = key.decode("utf-8").lower()
 
     if game_over and key == 'r':
@@ -896,8 +906,8 @@ def keyboard(key, x, y):
         return
 
     if not game_over:
-        if key == 'w':
-            player_z += move_speed
+        if key == 'w':  # Toggle camera mode
+            camera_mode = "first" if camera_mode == "third" else "third"
         elif key == 'a':
             player_x += move_speed  
             if player_x > road_width / 2 - player_size / 2:
