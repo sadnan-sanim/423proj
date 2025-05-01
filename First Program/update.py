@@ -127,14 +127,14 @@ def update_road():
         })
 
     # Spawn vehicles randomly
-    spawn_chance = min(0.02 + score * 0.0005, 0.2)  # Max cap to avoid overload
+    spawn_chance = min(0.02 + score * 0.0005, 0.1)  # Max cap to avoid overload
     if random.random() < spawn_chance:
         if spawn_chance>0.1:
             print("BRUHHHHHH")
         spawn_vehicle()
-
+    spawn_chance_coin = min(0.04 + score * 0.0005, 0.15)
     # Spawn coins randomly
-    if random.random() < spawn_chance:
+    if random.random() < spawn_chance_coin:
         spawn_coin_batch()
 
     # Update vehicle positions
