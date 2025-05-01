@@ -4,7 +4,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18
-
+cheat_mode=False
 # Teapot data
 teapot = None  # Stores the teapot's position and state
 teapot_rotation = 0.0  # Rotation angle for the teapot
@@ -18,8 +18,8 @@ bullet_size = 0.1    # Size of the bullet
 initial_zpos=2.0
 distanceCovered=0.0
 movementSpeed=0.001
-speed_increment=0.0001
-max_speed= 0.25
+speed_increment=0.00007
+max_speed= 0.22
 coins= []
 coinCount= 0
 trees = []
@@ -878,7 +878,7 @@ def display():
 
 
 def keyboard(key, x, y):
-    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed, movementSpeed, speed_increment, segments,coinCount, camera_mode
+    global player_x, player_z, bullets, game_over, vehicles, distanceCovered, initial_zpos, move_speed, movementSpeed, speed_increment, segments,coinCount, camera_mode,cheat_mode
     key = key.decode("utf-8").lower()
 
     if game_over and key == 'r':
@@ -890,6 +890,7 @@ def keyboard(key, x, y):
         vehicles.clear()
         distanceCovered = 0.0
         game_over = False
+        cheat_mode=False
         coinCount = 0
         coins.clear()
         trees.clear()
@@ -904,8 +905,14 @@ def keyboard(key, x, y):
             })
 
         return
-
+    
     if not game_over:
+        if key=='c':
+            cheat_mode=not cheat_mode
+            print("CHEAT MODE:",cheat_mode)
+            print("CHEAT MODE:",cheat_mode)
+            print("CHEAT MODE:",cheat_mode)
+            print("CHEAT MODE:",cheat_mode)
         if key == 'w':  # Toggle camera mode
             camera_mode = "first" if camera_mode == "third" else "third"
         elif key == 'a':
@@ -920,17 +927,29 @@ def keyboard(key, x, y):
             fire_bullet()
         # Powerup 1: Increase bullet count by 1 (key: J)
         elif key == 'j':
-            if coinCount >= 5 and bullets < 5:
-                bullets += 1
-                coinCount -= 5
-                print("Powerup Activated: +1 Bullet")
-            elif bullets >= 5:
-                print("Max bullets reached!")
+            if cheat_mode==False:
+                if coinCount >= 5 and bullets < 5:
+                    bullets += 1
+                    coinCount -= 5
+                    print("Powerup Activated: +1 Bullet")
+                elif bullets >= 5:
+                    print("Max bullets reached!")
+                else:
+                    print("Not enough coins for Bullet Powerup!")
             else:
-                print("Not enough coins for Bullet Powerup!")
+                if coinCount >= 0 and bullets < 5:
+                    bullets += 1
+                    
+                    print("Powerup Activated: +1 Bullet")
+                elif bullets >= 5:
+                    print("Max bullets reached!")
+                else:
+                    print("Not enough coins for Bullet Powerup!")
+
 
         # Powerup 2: Halve movement speed (key: K)
         elif key == 'k':
+            
             if coinCount >= 10:
                 movementSpeed = max(movementSpeed / 2, 0.001)
                 coinCount -= 10
@@ -940,13 +959,23 @@ def keyboard(key, x, y):
 
         # Powerup 3: Bomb - Destroy vehicles in range (key: L)
         elif key == 'l':
-            if coinCount >= 1:
-                bomb_radius = 15.0  # Define radius around player
-                vehicles[:] = [v for v in vehicles if math.hypot(v["x_position"] - player_x, v["z_position"] - player_z) > bomb_radius]
-                coinCount -= 0
-                print("Powerup Activated: Bomb!")
+            if cheat_mode==False:
+                if coinCount >= 20:
+                    bomb_radius = 15.0  # Define radius around player
+                    vehicles[:] = [v for v in vehicles if math.hypot(v["x_position"] - player_x, v["z_position"] - player_z) > bomb_radius]
+                    coinCount -= 20
+                    print("Powerup Activated: Bomb!")
+                else:
+                    print("Not enough coins for Bomb Powerup!")
             else:
-                print("Not enough coins for Bomb Powerup!")
+                if coinCount >= 0:
+                    bomb_radius = 15.0  # Define radius around player
+                    vehicles[:] = [v for v in vehicles if math.hypot(v["x_position"] - player_x, v["z_position"] - player_z) > bomb_radius]
+                    coinCount -= 0
+                    print("Powerup Activated: Bomb!")
+                else:
+                    print("Not enough coins for Bomb Powerup!")
+                
 
 
     glutPostRedisplay()
