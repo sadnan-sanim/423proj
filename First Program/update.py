@@ -59,7 +59,7 @@ vehicle_size = 0.4
 vehicle_speed = 2
 
 # Mouse coordinates
-mouse_x, mouse_y = 0, 0
+# mouse_x, mouse_y = 0, 0
 
 def init():
     glClearColor(0.1, 0.1, 0.2, 1.0)
@@ -504,26 +504,26 @@ def update_debris():
     # Remove debris that went too far behind
     debris = [d for d in debris if d["z"] > player_z - 10.0]
 
-def draw_mouse_coords():
-    glMatrixMode(GL_PROJECTION)
-    glPushMatrix()
-    glLoadIdentity()
-    gluOrtho2D(0, width, 0, height)
+# def draw_mouse_coords():
+#     glMatrixMode(GL_PROJECTION)
+#     glPushMatrix()
+#     glLoadIdentity()
+#     gluOrtho2D(0, width, 0, height)
 
-    glMatrixMode(GL_MODELVIEW)
-    glPushMatrix()
-    glLoadIdentity()
+#     glMatrixMode(GL_MODELVIEW)
+#     glPushMatrix()
+#     glLoadIdentity()
 
-    glColor3f(1.0, 1.0, 1.0)
-    glRasterPos2f(10, 10)
-    coord_text = f"Mouse: ({mouse_x}, {mouse_y})"
-    for ch in coord_text:
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
+#     glColor3f(1.0, 1.0, 1.0)
+#     glRasterPos2f(10, 10)
+#     coord_text = f"Mouse: ({mouse_x}, {mouse_y})"
+#     for ch in coord_text:
+#         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
 
-    glPopMatrix()
-    glMatrixMode(GL_PROJECTION)
-    glPopMatrix()
-    glMatrixMode(GL_MODELVIEW)
+#     glPopMatrix()
+#     glMatrixMode(GL_PROJECTION)
+#     glPopMatrix()
+#     glMatrixMode(GL_MODELVIEW)
 
 def fire_bullet():
     global bullets, active_bullets, game_over
@@ -544,11 +544,11 @@ def fire_bullet():
         
 
 
-def mouse_motion(x, y):
-    global mouse_x, mouse_y
-    mouse_x = x
-    mouse_y = height - y  # Flip Y to match OpenGL's bottom-left origin
-    glutPostRedisplay()
+# def mouse_motion(x, y):
+#     global mouse_x, mouse_y
+#     mouse_x = x
+#     mouse_y = height - y  # Flip Y to match OpenGL's bottom-left origin
+#     glutPostRedisplay()
 
 
 def draw_distance():
@@ -862,7 +862,7 @@ def display():
     draw_coins()
     
     coin_collision()
-    draw_mouse_coords()
+    # draw_mouse_coords()
     draw_distance()
     draw_score()
     # Teapot logic
@@ -987,13 +987,13 @@ def main():
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
     glutInitWindowSize(width, height)
     glutInitWindowPosition(100, 100)
-    glutCreateWindow(b"Crossy Game 3D with Vehicles - PyOpenGL")
+    glutCreateWindow(b"Run To Live 3D game")
 
     init()
     glutDisplayFunc(display)
     glutKeyboardFunc(keyboard)
     glutIdleFunc(display)
-    glutPassiveMotionFunc(mouse_motion)
+    # glutPassiveMotionFunc(mouse_motion)
     glutMainLoop()
 
 
