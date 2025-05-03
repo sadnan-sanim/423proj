@@ -611,17 +611,16 @@ def spawn_coin_batch():
         if int(s["z_position"] / road_segment_length) % 2 == 0
         and not s["coin_present"]
         and not s["vehicle_present"]
-        and s["z_position"] > player_z
-    ]
+        and s["z_position"] > player_z]
 
     if not eligible_segments:
         return
 
     segment = random.choice(eligible_segments)
-    segment["coin_present"] = True  # Mark this segment
+    segment["coin_present"] = True  
 
     batch_size = random.randint(2, 5)
-    gap = 0.5  # gap between coins on Z-axis
+    gap = 0.5  
     x_pos = random.uniform(-road_width / 2 + 0.5, road_width / 2 - 0.5)
     z_start = segment["z_position"] + road_segment_length / 2
 
@@ -630,8 +629,7 @@ def spawn_coin_batch():
         coins.append({
             "x": x_pos,
             "z": z,
-            "collected": False
-        })
+            "collected": False})
 
 def draw_coins():
     for coin in coins:
@@ -642,6 +640,7 @@ def draw_coins():
             glutSolidSphere(0.1, 16, 16)
             glPopMatrix()
 
+
 def coin_collision():
     global coinCount
     for coin in coins:
@@ -651,22 +650,20 @@ def coin_collision():
                 coinCount += 1
                 print(f"Coins collected: {coinCount}")
 
+
 def spawn_teapot():
     global teapot, teapot_respawn_timer
 
-    # Check if the respawn timer has elapsed
     if teapot is None and teapot_respawn_timer <= 0:
-        # Spawn the teapot randomly after a certain distance
         if distanceCovered > 50 and random.random() < 0.1:
             teapot = {
                 "x": random.uniform(-road_width / 2 + 0.5, road_width / 2 - 0.5),
                 "z": player_z + visible_range - 10,  # Spawn ahead of the player
-                "collected": False
-            }
+                "collected": False}
             print("Teapot spawned!")
+
     elif teapot is None:
-        # Decrease the respawn timer
-        teapot_respawn_timer -= 0.016  # Assuming ~60 FPS
+        teapot_respawn_timer -= 0.016  
 
 
 def draw_teapot():
@@ -674,43 +671,45 @@ def draw_teapot():
 
     if teapot and not teapot["collected"]:
         glPushMatrix()
-        glTranslatef(teapot["x"], 0.5, teapot["z"])  # Position the teapot
-        glRotatef(teapot_rotation, 0, 1, 0)  # Rotate around the Y-axis
-        glColor3f(1.0, 0.5, 0.0)  # Orange color for the teapot
-        glutSolidTeapot(0.3)  # Teapot size
+        glTranslatef(teapot["x"], 0.5, teapot["z"])  
+        glRotatef(teapot_rotation, 0, 1, 0)  
+        glColor3f(1.0, 0.5, 0.0)  
+        glutSolidTeapot(0.3)
         glPopMatrix()
 
-        # Update rotation
+        #rotation update
         teapot_rotation += 2.0
         if teapot_rotation >= 360.0:
             teapot_rotation -= 360.0   
+
+
 
 def teapot_collision():
     global teapot, teapot_invincibility, teapot_timer
 
     if teapot and not teapot["collected"]:
-        # Check if the player is close enough to collect the teapot
         if abs(player_x - teapot["x"]) < 0.25 and abs(player_z - teapot["z"]) < 0.25:
             teapot["collected"] = True
             teapot_invincibility = True
-            teapot_timer = 5.0  # 5 seconds of invincibility
+            teapot_timer = 5.0  
             print("Teapot collected! Invincibility activated for 3 seconds.")   
+
 
 def update_teapot():
     global teapot, teapot_invincibility, teapot_timer, teapot_respawn_timer
 
-    # Reduce the invincibility timer if active
     if teapot_invincibility:
-        teapot_timer -= 0.016  # Assuming ~60 FPS
+        teapot_timer -= 0.016  
         if teapot_timer <= 0:
             teapot_invincibility = False
             print("Invincibility expired.")
             teapot_timer = 0.0
 
-    # Remove the teapot if it has been collected
     if teapot and teapot["collected"]:
         teapot = None
-        teapot_respawn_timer = 5.0  # Set respawn timer to 5 seconds          
+        teapot_respawn_timer = 5.0 
+        
+                 
                 
 def draw_powerup_circle(x, y, radius, text, key):
     # Draw the circle border
