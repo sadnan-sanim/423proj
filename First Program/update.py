@@ -19,8 +19,8 @@ bullets = 5
 initial_zpos=2.0
 distanceCovered=0.0
 movementSpeed=0.001
-speed_increment=0.00007
-max_speed= 0.22
+speed_increment=0.00009
+max_speed= 0.25
 coins= []
 coinCount= 0
 trees = []
@@ -456,7 +456,7 @@ def draw_bullets():
     glColor3f(204/255, 0, 0.0)  
     for bullet in active_bullets:
         glPushMatrix()
-        glTranslatef(bullet["x_position"], 0.2, bullet["z_position"])  #Adjust height
+        glTranslatef(bullet["x_position"], 0.2, bullet["z_position"])  #Adjusting height
         glutSolidSphere(bullet_size, 16, 16) 
         glPopMatrix()
 
@@ -476,15 +476,16 @@ def draw_debris():
 
         glPopMatrix()
 
+
+
 def update_debris():
     global debris
 
     farthest_z = max([d["z"] for d in debris], default=player_z)
-
     while farthest_z < player_z + debris_spawn_distance:
         farthest_z += debris_spacing
 
-        # Random left or right side
+        #random left/right 
         side = random.choice([-1, 1])
         x_pos = side * random.uniform(3.0, 15.0)
 
@@ -492,32 +493,12 @@ def update_debris():
             "x": x_pos,
             "z": farthest_z,
             "size": random.uniform(0.1, 0.9),
-            "type": random.choice(["rock", "bone"])
-        })
+            "type": random.choice(["rock", "bone"])})
 
-    # Remove debris that went too far behind
+    #removing debris from behind
     debris = [d for d in debris if d["z"] > player_z - 10.0]
 
-# def draw_mouse_coords():
-#     glMatrixMode(GL_PROJECTION)
-#     glPushMatrix()
-#     glLoadIdentity()
-#     gluOrtho2D(0, width, 0, height)
 
-#     glMatrixMode(GL_MODELVIEW)
-#     glPushMatrix()
-#     glLoadIdentity()
-
-#     glColor3f(1.0, 1.0, 1.0)
-#     glRasterPos2f(10, 10)
-#     coord_text = f"Mouse: ({mouse_x}, {mouse_y})"
-#     for ch in coord_text:
-#         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
-
-#     glPopMatrix()
-#     glMatrixMode(GL_PROJECTION)
-#     glPopMatrix()
-#     glMatrixMode(GL_MODELVIEW)
 
 def fire_bullet():
     global bullets, active_bullets, game_over
@@ -525,8 +506,7 @@ def fire_bullet():
     # Add a new bullet at the player's position
     active_bullets.append({
         "x_position": player_x,
-        "z_position": player_z + 0.5,  # Slightly ahead of the player
-    })
+        "z_position": player_z + 0.5,})
 
     bullets -= 1  # Reduce the bullet count
     print(f"Bullets left: {bullets}")
@@ -536,15 +516,6 @@ def fire_bullet():
         print("No bullets left!")
           
         
-
-
-# def mouse_motion(x, y):
-#     global mouse_x, mouse_y
-#     mouse_x = x
-#     mouse_y = height - y  # Flip Y to match OpenGL's bottom-left origin
-#     glutPostRedisplay()
-
-
 def draw_distance():
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
@@ -555,22 +526,15 @@ def draw_distance():
     glPushMatrix()
     glLoadIdentity()
 
-    # # Display distance
-    # glColor3f(1.0, 1.0, 1.0)
-    # distance_text = f"Distance: {int(distanceCovered)}"
-    # glRasterPos2f(10, height - 30)
-    # for ch in distance_text:
-    #     glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
-
-    # Display coins
-    glColor3f(1.0, 1.0, 0.0)  # Yellow color for coins
+    #coins
+    glColor3f(1.0, 1.0, 0.0)  
     coins_text = f"Coins: {coinCount}"
     glRasterPos2f(10, height - 25)
     for ch in coins_text:
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
 
-    # Display bullets
-    glColor3f(0.0, 1.0, 0.0)  # Red color for bullets
+    #bullets
+    glColor3f(0.0, 1.0, 0.0) 
     bullets_text = f"Bullets: {bullets}"
     glRasterPos2f(10, height - 75)
     for ch in bullets_text:
@@ -586,14 +550,13 @@ def draw_score():
     glPushMatrix()
     glLoadIdentity()
     gluOrtho2D(0, width, 0, height)
-
     glMatrixMode(GL_MODELVIEW)
     glPushMatrix()
     glLoadIdentity()
-
     glColor3f(1.0, 1.0, 0.0)
     score_text = f"Score: {score}"
     glRasterPos2f(10, height - 50)
+
     for ch in score_text:
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
 
@@ -606,13 +569,12 @@ def draw_game_over():
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
     glLoadIdentity()
-    gluOrtho2D(0, width, 0, height)  # Set up orthographic projection
+    gluOrtho2D(0, width, 0, height)  
 
     glMatrixMode(GL_MODELVIEW)
     glPushMatrix()
     glLoadIdentity()
 
-    # Black background
     glDisable(GL_DEPTH_TEST)
     glColor3f(0.0, 0.0, 0.0)
     glBegin(GL_QUADS)
@@ -622,24 +584,24 @@ def draw_game_over():
     glVertex2f(0, height)
     glEnd()
 
-    # "YOU DIED" - Red text
     glColor3f(1.0, 0.0, 0.0)
     glRasterPos2f(width // 2 - 50, height // 2 + 10)
+
     for c in "YOU DIED":
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(c))
 
-    # "PRESS R TO RESTART" - White text
     glColor3f(1.0, 1.0, 1.0)
     glRasterPos2f(width // 2 - 90, height // 2 - 20)
+
     for c in "PRESS R TO RESTART":
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(c))
 
     glEnable(GL_DEPTH_TEST)
-
     glMatrixMode(GL_PROJECTION)
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
     glPopMatrix()
+
 
 def spawn_coin_batch():
     global coins
