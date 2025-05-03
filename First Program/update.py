@@ -267,25 +267,27 @@ def draw_circle(x, y, z, radius, slices=30):
 
 def draw_wheel(x, y, z, radius, rotation_angle):
     glPushMatrix()
-    glTranslatef(x, y, z)  # Move to the wheel position
+    glTranslatef(x, y, z)               #Move to the wheel position
     glColor3f(36/255, 75/255, 117/255)
-    glRotatef(rotation_angle, 1, 0, 0)  # Rotate around the Y-axis (you can adjust axes as needed)
-    draw_circle(0, 0, 0, radius)  # Draw the circle at the origin of the rotated position
+    glRotatef(rotation_angle, 1, 0, 0)  #Rotate around the Y-axis (you can adjust axes as needed)
+    draw_circle(0, 0, 0, radius)        #Draw the circle at the origin of the rotated position
     glPopMatrix()
+
+
 def draw_vehicles():
     for vehicle in vehicles:
         sf=0.09
         glPushMatrix()
         glTranslatef(vehicle["x_position"], 0.0, vehicle["z_position"])
-        # mainbody
-        
+
+        #mainbody
         glColor3f( 189/255,  67/255, 54/255)
         glTranslatef(0.0,0,0.0)
         glScalef(2,1.0,0.79)
         glutSolidCube(0.4)
         glPopMatrix()
-        # left part
-        
+
+        #left part
         glPushMatrix()
         glTranslatef(vehicle["x_position"], 0.0, vehicle["z_position"])
         glColor3f(210/255, 209/255, 185/255)
@@ -295,28 +297,30 @@ def draw_vehicles():
         glPopMatrix()
         
         wheel_radius = 0.1
-        wheel_offset = 0.2  # Adjust the position as needed
+        wheel_offset = 0.2  
         wheel_rotation = 90
         draw_wheel(vehicle["x_position"] - wheel_offset, 0.03, vehicle["z_position"] - 0.35, wheel_radius, wheel_rotation)
-        # Rear right wheel
+
+        #Rear right wheel
         draw_wheel(vehicle["x_position"] + wheel_offset, 0.03, vehicle["z_position"] - 0.35, wheel_radius, wheel_rotation)
+
 
 def draw_trees():
     for tree in trees:
         glPushMatrix()
         glTranslatef(tree["x"], 0.0, tree["z"])
 
-        # Draw trunk
-        glColor3f(76/255, 44/255, 44/255)  # Brown
+        #trunk
+        glColor3f(76/255, 44/255, 44/255)  
         glPushMatrix()
         glTranslatef(0.0, 0.0, 0.0)
         glScalef(0.2, 3.0, 0.1)
         glutSolidCube(1.0)
         glPopMatrix()
 
-        # Draw leaves
-        glColor3f(22/255, 113/255, 126/255)  # Green
-        glTranslatef(0.0, 1.75, 0.0)  # Move to top of trunk
+        #leaves
+        glColor3f(22/255, 113/255, 126/255)  
+        glTranslatef(0.0, 1.75, 0.0)         #Moving to top of trunk
 
         num_fronds = 12
         frond_length = 1.5
@@ -324,13 +328,11 @@ def draw_trees():
         for i in range(num_fronds):
             glPushMatrix()
 
-            # Random downward tilt between 20 to 45 degrees
             downward_tilt = random.uniform(40, 45)
 
-            # Rotate downward first (X axis)
             glRotatef(downward_tilt, 1, 0, 0)
 
-            # Then rotate around the trunk (Y axis)
+            #rotate around the trunk
             glRotatef((360 / num_fronds) * i, 0, 1, 0)
 
             glScalef(0.1, 0.1, frond_length)
@@ -345,10 +347,10 @@ def draw_trees():
 def update_trees():
     global trees
 
-    # Find farthest z among existing trees
+    #Find farthest z among existing trees
     farthest_z = max([tree["z"] for tree in trees], default=player_z)
 
-    # Keep generating trees ahead
+    #generating trees ahead
     while farthest_z < player_z + max_tree_distance:
         farthest_z += tree_spacing
 
@@ -361,12 +363,12 @@ def update_trees():
             "z": farthest_z
         })
 
-    # Remove trees that are too far behind
+    #Removing trees that are too far behind
     trees = [tree for tree in trees if tree["z"] > player_z - 10.0]
 
 def draw_desert_ground():
     glPushMatrix()
-    glColor3f(191/255,116/255,100/255)  # Sandy color
+    glColor3f(191/255,116/255,100/255) 
     glBegin(GL_QUADS)
     glVertex3f(-100.0, -0.06, player_z - 50.0)
     glVertex3f(100.0, -0.06, player_z - 50.0)
@@ -382,33 +384,33 @@ def draw_sunset():
     glPushMatrix()
     glDisable(GL_LIGHTING)
 
-    # Sun position based on visible road range
-    sunset_distance = player_z + visible_range + 2.0  # small offset ahead to make it look on the horizon
+    #Sun position 
+    sunset_distance = player_z + visible_range + 2.0  
 
-    # Draw background sky (orange to purple)
+    #background sky 
     glBegin(GL_QUADS)
-    glColor3f(1.0, 0.5, 0.2)   # Bottom color (orange)
+    glColor3f(1.0, 0.5, 0.2)   
     glVertex3f(-100, -1.0, sunset_distance)
     glVertex3f(100, -1.0, sunset_distance)
-    glColor3f(0.6, 0.0, 0.6)  # Top color (purple-ish)
+    glColor3f(0.6, 0.0, 0.6)  
     glVertex3f(100, 40.0, sunset_distance)
     glVertex3f(-100, 40.0, sunset_distance)
     glEnd()
 
-    # Draw the sun
-    glColor3f(254/255,212/255,153/255)  # Yellow
-    glTranslatef(0.0, 1.0, sunset_distance - 0.5)  # (10 units high)
+    #sun
+    glColor3f(254/255,212/255,153/255)  
+    glTranslatef(0.0, 1.0, sunset_distance - 0.5)  
     glutSolidSphere(5.0, 32, 32) 
-
     glPopMatrix()
+
+
 def draw_mountain(x, y, z):
     glPushMatrix()
     glTranslatef(x, y, z)
     glScalef(3.0, 3.0, 1.0)
+    glDisable(GL_DEPTH_TEST)  
 
-    glDisable(GL_DEPTH_TEST)  # <-- temporarily disable depth test
-
-    # Base layer - top lightest
+    #Base layer 
     glColor3f(102/255, 49/255, 8/255)
     glBegin(GL_TRIANGLES)
     glVertex3f(-1.0, 0.0, 0.0)
@@ -416,7 +418,7 @@ def draw_mountain(x, y, z):
     glVertex3f(0.0, 1.0, 0.0)
     glEnd()
 
-    # Middle layer - medium
+    #Middle layer
     glColor3f(93/255, 45/255, 8/255)
     glBegin(GL_TRIANGLES)
     glVertex3f(-0.8, 0.0, 0.01)
@@ -424,16 +426,14 @@ def draw_mountain(x, y, z):
     glVertex3f(0.0, 0.8, 0.01)
     glEnd()
 
-    # Top layer - darkest
+    # Top layer 
     glColor3f(79/255, 45/255, 8/255)
     glBegin(GL_TRIANGLES)
     glVertex3f(-0.5, 0.0, 0.02)
     glVertex3f(0.5, 0.0, 0.02)
     glVertex3f(0.0, 0.5, 0.02)
     glEnd()
-
-    glEnable(GL_DEPTH_TEST)  # <-- re-enable depth test
-
+    glEnable(GL_DEPTH_TEST)  
     glPopMatrix()
 
 
@@ -442,23 +442,24 @@ def draw_mountain(x, y, z):
 def draw_mountain_range():
     global player_x,player_y
     spacing = 5
-    z_base = player_z + 50  # far in the background
+    z_base = player_z + 50  
 
-    for i in range(-100, 101, spacing):
-        
+    for i in range(-100, 101, spacing): 
         if i >5 or i<-5:
-            draw_mountain(i, 0.0, z_base )  # slight z jitter for depth
+            draw_mountain(i, 0.0, z_base ) 
         
+
 
 def draw_bullets():
     global active_bullets
 
-    glColor3f(204/255, 0, 0.0)  # Bright Yellow color
+    glColor3f(204/255, 0, 0.0)  
     for bullet in active_bullets:
         glPushMatrix()
-        glTranslatef(bullet["x_position"], 0.2, bullet["z_position"])  # Adjust height
-        glutSolidSphere(bullet_size, 16, 16)  # Draw the bullet as a sphere
+        glTranslatef(bullet["x_position"], 0.2, bullet["z_position"])  #Adjust height
+        glutSolidSphere(bullet_size, 16, 16) 
         glPopMatrix()
+
 
 def draw_debris():
     for d in debris:
