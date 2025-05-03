@@ -195,11 +195,11 @@ def draw_road():
         is_road = int(segment["z_position"] / road_segment_length) % 2 == 0
 
         if is_road:
-            glColor3f(36/255,33/255,42/255)  # Road color
+            glColor3f(36/255,33/255,42/255)  #Road color
         else:
-            glColor3f(48/255,93/255,75/255)  # Grass color
+            glColor3f(48/255,93/255,75/255)  #Grass color
 
-        # Draw road or grass
+        #Draw road or grass
         glBegin(GL_QUADS)
         glVertex3f(-road_width / 2, -0.05, segment["z_position"])
         glVertex3f(road_width / 2, -0.05, segment["z_position"])
@@ -207,15 +207,15 @@ def draw_road():
         glVertex3f(-road_width / 2, -0.05, segment["z_position"] + road_segment_length)
         glEnd()
 
-        # Draw dashed white road markings across
+        #Draw dashed white road markings across
         if is_road:
-            glColor3f(1.0, 1.0, 1.0)  # White color
-            mark_width = 0.6           # Width of each mark
-            mark_thickness = 0.1       # Thickness in Z direction
-            mark_gap = 0.7             # Gap between marks
+            glColor3f(1.0, 1.0, 1.0)  
+            mark_width = 0.6           
+            mark_thickness = 0.1       
+            mark_gap = 0.7             
 
-            start_x = -road_width / 2 + mark_gap  # start a bit inside
-            end_x = road_width / 2 - mark_width - mark_gap  # end a bit inside
+            start_x = -road_width / 2 + mark_gap            #start a bit inside
+            end_x = road_width / 2 - mark_width - mark_gap  #end a bit inside
 
             x = start_x
             while x <= end_x:
@@ -238,31 +238,34 @@ def draw_player():
     glColor3f(1.0, 1.0, 1.0)
     glutSolidCone(0.1,0.4,32,32)
     glPopMatrix()
-    # player head
+
+    #player head
     glPushMatrix()
     glTranslatef(player_x,0.4,player_z)
     glColor3f(1,1,1)
     glutSolidSphere(0.080,32,32)
     glPopMatrix()
-    # hat
+
+    #hat
     glPushMatrix()
     glTranslate(player_x,0.40,player_z)
     glRotatef(-90, 1, 0, 0)
     glColor3f(200/255,54/255,67/255)
     glutSolidCone(0.08,0.25,32,32)
-    # glutSolidOctahedron()
     glPopMatrix()
 
 def rgbconv(r,g,b):
     return (r/255,g/255,b/255)
+
 def draw_circle(x, y, z, radius, slices=30):
     glBegin(GL_POLYGON)
     for i in range(slices):
         angle = 2 * math.pi * i / slices
         glVertex3f(x + radius * math.cos(angle), y, z + radius * math.sin(angle))
     glEnd()
+
+
 def draw_wheel(x, y, z, radius, rotation_angle):
-    # Rotate the wheel to the desired orientation
     glPushMatrix()
     glTranslatef(x, y, z)  # Move to the wheel position
     glColor3f(36/255, 75/255, 117/255)
