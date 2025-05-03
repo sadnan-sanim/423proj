@@ -707,7 +707,7 @@ def update_teapot():
                  
                 
 def draw_powerup_circle(x, y, radius, text, key):
-    # Draw the circle border
+    #circel
     glColor3f(0.0, 0.0, 0.0)  
     glBegin(GL_LINE_LOOP)
     for i in range(30):  
@@ -715,7 +715,7 @@ def draw_powerup_circle(x, y, radius, text, key):
         glVertex2f(x + radius * math.cos(angle), y + radius * math.sin(angle))
     glEnd()
 
-    # Draw the circle
+    # txt
     glColor3f(1.0, 0.0, 0.0)  
     lines = text.split()  
     line_height = 12  
@@ -725,7 +725,7 @@ def draw_powerup_circle(x, y, radius, text, key):
         for c in line:
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, ord(c))  
 
-    # labelling
+    # jkl label
     glColor3f(1.0, 0.0, 0.0)  
     glRasterPos2f(x - 5, y - radius - 15)  
     for c in key:  
@@ -742,7 +742,7 @@ def draw_powerup_keys():
     glPushMatrix()
     glLoadIdentity()
 
-    # Draw the power-up keys
+   
     draw_powerup_circle(width - 300, 100, 30, "+1 Bullet", "j")  
     draw_powerup_circle(width - 200, 100, 30, "Halved Speed", "k")  
     draw_powerup_circle(width - 100, 100, 30, "Bomb", "l")
@@ -770,14 +770,7 @@ def display():
     score=int(distanceCovered/10)
     # vehicle_speed+=speed_increment
     # vehicle_speed=min(vehicle_speed,1)
-    if game_over:
-        
-        glColor3f(1.0, 0.0, 0.0)  
-        glRasterPos2f(-0.2, 0.0)  
-        for ch in "GAME OVER":
-            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
-        glutSwapBuffers()
-        return  
+
 
     if camera_mode == "third":
         cam_x = player_x
@@ -861,8 +854,7 @@ def keyboard(key, x, y):
             cheat_mode=not cheat_mode
             print("CHEAT MODE:",cheat_mode)
             print("CHEAT MODE:",cheat_mode)
-            print("CHEAT MODE:",cheat_mode)
-            print("CHEAT MODE:",cheat_mode)
+
         if key == 'w':  
             camera_mode = "first" if camera_mode == "third" else "third"
         elif key == 'a':
@@ -937,7 +929,7 @@ glutInit()
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 glutInitWindowSize(width, height)
 glutInitWindowPosition(100, 100)
-glutCreateWindow(b"Run To Live 3D game")
+glutCreateWindow(b"Run To Survive 3D")
 
 init()
 glutDisplayFunc(display)
