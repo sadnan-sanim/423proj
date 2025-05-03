@@ -6,15 +6,16 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18
 cheat_mode=False
 # Teapot data
-teapot = None  # Stores the teapot's position and state
-teapot_rotation = 0.0  # Rotation angle for the teapot
-teapot_invincibility = False  # Whether the player is invincible
-teapot_timer = 0.0  # Timer to track invincibility duration
-teapot_respawn_timer = 0.0# Teapot respawn timer
+teapot = None  #Stores the teapot's position and state
+teapot_rotation = 0.0  #Rotation angle for the teapot
+teapot_invincibility = False  #Whether the player is invincible
+teapot_timer = 0.0  #Timer to track invincibility duration
+teapot_respawn_timer = 0.0  #Teapot respawn timer
 
-active_bullets = []  # List to store active bullets
-bullet_speed = 0.4   # Speed of the bullet
-bullet_size = 0.1    # Size of the bullet
+active_bullets = []  #List to store active bullets
+bullet_speed = 0.4   
+bullet_size = 0.1
+bullets = 5    
 initial_zpos=2.0
 distanceCovered=0.0
 movementSpeed=0.001
@@ -23,48 +24,40 @@ max_speed= 0.22
 coins= []
 coinCount= 0
 trees = []
-tree_spacing = 8.5  # Distance between trees
-max_tree_distance = 50.0  # How far ahead trees are generated
-day_time = 0.0
-day_speed = 0.001  # Speed of time change
+tree_spacing = 8.5  
+max_tree_distance = 50.0  
 debris = []
 debris_spawn_distance = 30.0
 debris_spacing = 3.0
 game_over = False
 camera_mode = "third" 
 score=0
-# Window size
+
 width, height = 800, 600
 
-# Player position
 player_x, player_z = 0.0, 2.0
 player_size = 0.2
 move_speed = 0.2
 
-# Bullet count
-bullets = 5
 
-# Road and pavement dimensions
+#Road parameters
 road_segment_length = 4.0
 road_width = 5.3
 num_segments = 10
 visible_range = 60.0
 
-# Road/pavement and vehicle data
+#Road/pavement and vehicle data
 segments = []
 vehicles = []
 
-# Vehicle parameters
+#Vehicle parameters
 vehicle_size = 0.4
 vehicle_speed = 2
 
-# Mouse coordinates
-# mouse_x, mouse_y = 0, 0
 
 def init():
     glClearColor(0.1, 0.1, 0.2, 1.0)
     glEnable(GL_DEPTH_TEST)
-
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(45, width / height, 0.4, 100)
@@ -75,14 +68,12 @@ def init():
             "z_position": i * road_segment_length,
             "active": True,
             "vehicle_present": False,
-            "coin_present": False
-        })
+            "coin_present": False})
 
 
 
 def spawn_vehicle():
     side = random.choice(["left", "right"])
-
     eligible_segments = [s for s in segments if s["z_position"] > player_z and not s["vehicle_present"]]
     if not eligible_segments:
         return
@@ -105,63 +96,61 @@ def spawn_vehicle():
         "x_position": x_position,
         "z_position": z_position,
         "direction": direction,
-        "speed": speed
-    })
+        "speed": speed})
 
 def update_road():
     global segments, vehicles, player_x, player_z, game_over
 
     if game_over:
-        return  # Stop updating if the game is over
+        return 
 
-    # Remove road segments that are too far behind
+    #Remove road segments that are too far behind
     if segments[0]["z_position"] + road_segment_length < player_z - visible_range:
         segments.pop(0)
 
-    # Add new road segments ahead
+    #Add new road segments ahead
     if segments[-1]["z_position"] < player_z + visible_range:
         segments.append({
             "z_position": segments[-1]["z_position"] + road_segment_length,
             "active": True,
             "vehicle_present": False,
-            "coin_present": False
-        })
+            "coin_present": False})
 
-    # Spawn vehicles randomly
-    spawn_chance = min(0.02 + score * 0.0005, 0.1)  # Max cap to avoid overload
+    #Spawn vehicles randomly
+    spawn_chance = min(0.02 + score * 0.0005, 0.1)  #Max cap to avoid overload
     if random.random() < spawn_chance:
         if spawn_chance>0.1:
             print("BRUHHHHHH")
         spawn_vehicle()
+
     spawn_chance_coin = min(0.04 + score * 0.0005, 0.15)
-    # Spawn coins randomly
+
+    #Spawn coins randomly
     if random.random() < spawn_chance_coin:
         spawn_coin_batch()
 
-    # Update vehicle positions
+    #Update vehicle positions
     for vehicle in vehicles:
         if vehicle["direction"] == "left":
             vehicle["x_position"] -= vehicle["speed"]
         else:
             vehicle["x_position"] += vehicle["speed"]
 
-    # Remove vehicles that are out of bounds
+    #Remove vehicles that are out of bounds
     vehicles = [v for v in vehicles if (-road_width / 2 - vehicle_size) <= v["x_position"] <= (road_width / 2 + vehicle_size)]
 
-    # Update segment vehicle flags
+    #Update segment vehicle flags
     for segment in segments:
-        segment["vehicle_present"] = any(
-            abs(v["z_position"] - segment["z_position"]) < 0.01 for v in vehicles
-        )
+        segment["vehicle_present"] = any(abs(v["z_position"] - segment["z_position"]) < 0.01 for v in vehicles)
 
-    # Check for collision with the player
+    #Check for collision with the player
     for vehicle in vehicles:
         if not teapot_invincibility and \
            abs(vehicle["x_position"] - player_x) < (vehicle_size / 2 + player_size / 2) and \
            abs(vehicle["z_position"] - player_z) < (vehicle_size / 2 + player_size / 2):
             print("Game Over! The player was hit by a car.")
-            game_over = True  # Set the game_over flag
-            return  # Stop further updates
+            game_over = True  
+            return 
         
 def draw_starting():
     glPushMatrix()
@@ -175,17 +164,18 @@ def draw_starting():
     glVertex3f(200,0,0)
     glEnd()
     glPopMatrix()
+
+
 def update_bullets():
     global active_bullets, vehicles
 
-    # Move bullets forward
+    #Move bullets forward
     for bullet in active_bullets:
         bullet["z_position"] += bullet_speed
 
-    # Check for collisions with vehicles
+    #Check for collisions with vehicles
     for bullet in active_bullets[:]:
         for vehicle in vehicles[:]:
-            # Increase the collision window by adding a range factor
             collision_range = 0.2  # Increase this value to expand the collision detection range
 
             if abs(bullet["x_position"] - vehicle["x_position"]) < (vehicle_size / 2 + collision_range) and \
