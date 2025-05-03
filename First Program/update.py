@@ -5,14 +5,14 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import GLUT_BITMAP_HELVETICA_18
 cheat_mode=False
-# Teapot data
-teapot = None  #Stores the teapot's position and state
-teapot_rotation = 0.0  #Rotation angle for the teapot
-teapot_invincibility = False  #Whether the player is invincible
-teapot_timer = 0.0  #Timer to track invincibility duration
-teapot_respawn_timer = 0.0  #Teapot respawn timer
+# Teapot initial state
+teapot = None 
+teapot_rotation = 0.0  
+teapot_invincibility = False 
+teapot_timer = 0.0  
+teapot_respawn_timer = 0.0  
 
-active_bullets = []  #List to store active bullets
+active_bullets = []  
 bullet_speed = 0.4   
 bullet_size = 0.1
 bullets = 5    
@@ -38,19 +38,14 @@ width, height = 800, 600
 player_x, player_z = 0.0, 2.0
 player_size = 0.2
 move_speed = 0.2
-
-
-#Road parameters
+#road
 road_segment_length = 4.0
 road_width = 5.3
 num_segments = 10
 visible_range = 60.0
-
-#Road/pavement and vehicle data
+#road and vehicle
 segments = []
 vehicles = []
-
-#Vehicle parameters
 vehicle_size = 0.4
 vehicle_speed = 2
 
@@ -89,7 +84,7 @@ def spawn_vehicle():
         x_position = road_width / 2 - vehicle_size / 2
         direction = "left"
 
-    base_speed = 0.005 + min(score * 0.0002, 0.015)  # From 0.005 up to ~0.02
+    base_speed = 0.005 + min(score * 0.0002, 0.015)  
     speed = random.uniform(base_speed, base_speed + 0.005)
 
     vehicles.append({
@@ -104,11 +99,11 @@ def update_road():
     if game_over:
         return 
 
-    #Remove road segments that are too far behind
+    #remove road segments that are far behind
     if segments[0]["z_position"] + road_segment_length < player_z - visible_range:
         segments.pop(0)
 
-    #Add new road segments ahead
+    #add new road ahead
     if segments[-1]["z_position"] < player_z + visible_range:
         segments.append({
             "z_position": segments[-1]["z_position"] + road_segment_length,
@@ -116,8 +111,8 @@ def update_road():
             "vehicle_present": False,
             "coin_present": False})
 
-    #Spawn vehicles randomly
-    spawn_chance = min(0.02 + score * 0.0005, 0.1)  #Max cap to avoid overload
+    #vehicle spawning on spawnchance
+    spawn_chance = min(0.02 + score * 0.0005, 0.1)  
     if random.random() < spawn_chance:
         if spawn_chance>0.1:
             print("BRUHHHHHH")
@@ -125,25 +120,25 @@ def update_road():
 
     spawn_chance_coin = min(0.04 + score * 0.0005, 0.15)
 
-    #Spawn coins randomly
+    #spawn coins on chance
     if random.random() < spawn_chance_coin:
         spawn_coin_batch()
 
-    #Update vehicle positions
+    #updating vehicle positions
     for vehicle in vehicles:
         if vehicle["direction"] == "left":
             vehicle["x_position"] -= vehicle["speed"]
         else:
             vehicle["x_position"] += vehicle["speed"]
 
-    #Remove vehicles that are out of bounds
+    #outofbounds remove
     vehicles = [v for v in vehicles if (-road_width / 2 - vehicle_size) <= v["x_position"] <= (road_width / 2 + vehicle_size)]
 
     #Update segment vehicle flags
     for segment in segments:
         segment["vehicle_present"] = any(abs(v["z_position"] - segment["z_position"]) < 0.01 for v in vehicles)
 
-    #Check for collision with the player
+    #collision with the player
     for vehicle in vehicles:
         if not teapot_invincibility and \
            abs(vehicle["x_position"] - player_x) < (vehicle_size / 2 + player_size / 2) and \
@@ -176,7 +171,7 @@ def update_bullets():
     #Check for collisions with vehicles
     for bullet in active_bullets[:]:
         for vehicle in vehicles[:]:
-            collision_range = 0.2   #collision range for vehicles
+            collision_range = 0.2 
 
             if abs(bullet["x_position"] - vehicle["x_position"]) < (vehicle_size / 2 + collision_range) and \
                abs(bullet["z_position"] - vehicle["z_position"]) < (vehicle_size / 2 + collision_range):
@@ -195,11 +190,11 @@ def draw_road():
         is_road = int(segment["z_position"] / road_segment_length) % 2 == 0
 
         if is_road:
-            glColor3f(36/255,33/255,42/255)  #Road color
+            glColor3f(36/255,33/255,42/255)  
         else:
-            glColor3f(48/255,93/255,75/255)  #Grass color
+            glColor3f(48/255,93/255,75/255)  
 
-        #Draw road or grass
+        # drawing
         glBegin(GL_QUADS)
         glVertex3f(-road_width / 2, -0.05, segment["z_position"])
         glVertex3f(road_width / 2, -0.05, segment["z_position"])
@@ -207,15 +202,15 @@ def draw_road():
         glVertex3f(-road_width / 2, -0.05, segment["z_position"] + road_segment_length)
         glEnd()
 
-        #Draw dashed white road markings across
+        #road marking
         if is_road:
             glColor3f(1.0, 1.0, 1.0)  
             mark_width = 0.6           
             mark_thickness = 0.1       
             mark_gap = 0.7             
 
-            start_x = -road_width / 2 + mark_gap            #start a bit inside
-            end_x = road_width / 2 - mark_width - mark_gap  #end a bit inside
+            start_x = -road_width / 2 + mark_gap            
+            end_x = road_width / 2 - mark_width - mark_gap  
 
             x = start_x
             while x <= end_x:
@@ -239,7 +234,7 @@ def draw_player():
     glutSolidCone(0.1,0.4,32,32)
     glPopMatrix()
 
-    #player head
+    #head
     glPushMatrix()
     glTranslatef(player_x,0.4,player_z)
     glColor3f(1,1,1)
@@ -254,9 +249,6 @@ def draw_player():
     glutSolidCone(0.08,0.25,32,32)
     glPopMatrix()
 
-def rgbconv(r,g,b):
-    return (r/255,g/255,b/255)
-
 def draw_circle(x, y, z, radius, slices=30):
     glBegin(GL_POLYGON)
     for i in range(slices):
@@ -267,10 +259,11 @@ def draw_circle(x, y, z, radius, slices=30):
 
 def draw_wheel(x, y, z, radius, rotation_angle):
     glPushMatrix()
-    glTranslatef(x, y, z)               #Move to the wheel position
+    glTranslatef(x, y, z) 
     glColor3f(36/255, 75/255, 117/255)
-    glRotatef(rotation_angle, 1, 0, 0)  #Rotate around the Y-axis (you can adjust axes as needed)
-    draw_circle(0, 0, 0, radius)        #Draw the circle at the origin of the rotated position
+    glRotatef(rotation_angle, 1, 0, 0)  
+    
+    draw_circle(0, 0, 0, radius)        
     glPopMatrix()
 
 
@@ -508,10 +501,10 @@ def fire_bullet():
         "x_position": player_x,
         "z_position": player_z + 0.5,})
 
-    bullets -= 1  # Reduce the bullet count
+    bullets -= 1 
     print(f"Bullets left: {bullets}")
 
-    # Check if bullets are finished
+    
     if bullets == 0:
         print("No bullets left!")
           
@@ -658,7 +651,7 @@ def spawn_teapot():
         if distanceCovered > 50 and random.random() < 0.1:
             teapot = {
                 "x": random.uniform(-road_width / 2 + 0.5, road_width / 2 - 0.5),
-                "z": player_z + visible_range - 10,  # Spawn ahead of the player
+                "z": player_z + visible_range - 10,
                 "collected": False}
             print("Teapot spawned!")
 
@@ -713,27 +706,27 @@ def update_teapot():
                 
 def draw_powerup_circle(x, y, radius, text, key):
     # Draw the circle border
-    glColor3f(0.0, 0.0, 0.0)  # Black color for the border
+    glColor3f(0.0, 0.0, 0.0)  
     glBegin(GL_LINE_LOOP)
-    for i in range(30):  # 30 slices for a smooth circle
+    for i in range(30):  
         angle = 2 * math.pi * i / 30
         glVertex2f(x + radius * math.cos(angle), y + radius * math.sin(angle))
     glEnd()
 
-    # Draw the text inside the circle
-    glColor3f(1.0, 0.0, 0.0)  # Red color for the text
-    lines = text.split()  # Split the text into lines if needed
-    line_height = 12  # Adjust line spacing
+    # Draw the circle
+    glColor3f(1.0, 0.0, 0.0)  
+    lines = text.split()  
+    line_height = 12  
     for i, line in enumerate(lines):
-        text_width = len(line) * 7  # Approximate text width for smaller font
-        glRasterPos2f(x - text_width / 2, y + (len(lines) - i - 1) * line_height - 5)  # Center each line
+        text_width = len(line) * 7  
+        glRasterPos2f(x - text_width / 2, y + (len(lines) - i - 1) * line_height - 5)  
         for c in line:
-            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, ord(c))  # Use a smaller font for better fit
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, ord(c))  
 
-    # Draw the key label below the circle
-    glColor3f(1.0, 0.0, 0.0)  # Black color for the key label
-    glRasterPos2f(x - 5, y - radius - 15)  # Adjust key label position
-    for c in key:  # Ensure the key is displayed in uppercase
+    # labelling
+    glColor3f(1.0, 0.0, 0.0)  
+    glRasterPos2f(x - 5, y - radius - 15)  
+    for c in key:  
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(c))
 
 
@@ -741,16 +734,16 @@ def draw_powerup_keys():
     glMatrixMode(GL_PROJECTION)
     glPushMatrix()
     glLoadIdentity()
-    gluOrtho2D(0, width, 0, height)  # Set up orthographic projection
+    gluOrtho2D(0, width, 0, height)  
 
     glMatrixMode(GL_MODELVIEW)
     glPushMatrix()
     glLoadIdentity()
 
     # Draw the power-up keys
-    draw_powerup_circle(width - 300, 100, 30, "+1 Bullet", "j")  # Key J
-    draw_powerup_circle(width - 200, 100, 30, "Halved Speed", "k")  # Key K
-    draw_powerup_circle(width - 100, 100, 30, "Bomb", "l")  # Key L
+    draw_powerup_circle(width - 300, 100, 30, "+1 Bullet", "j")  
+    draw_powerup_circle(width - 200, 100, 30, "Halved Speed", "k")  
+    draw_powerup_circle(width - 100, 100, 30, "Bomb", "l")
 
     glPopMatrix()
     glMatrixMode(GL_PROJECTION)
@@ -776,13 +769,13 @@ def display():
     # vehicle_speed+=speed_increment
     # vehicle_speed=min(vehicle_speed,1)
     if game_over:
-        # Display "Game Over" message
-        glColor3f(1.0, 0.0, 0.0)  # Red color
-        glRasterPos2f(-0.2, 0.0)  # Position the text
+        
+        glColor3f(1.0, 0.0, 0.0)  
+        glRasterPos2f(-0.2, 0.0)  
         for ch in "GAME OVER":
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ord(ch))
         glutSwapBuffers()
-        return  # Stop further rendering
+        return  
 
     if camera_mode == "third":
         cam_x = player_x
@@ -817,13 +810,13 @@ def display():
     draw_coins()
     
     coin_collision()
-    # draw_mouse_coords()
+    
     draw_distance()
     draw_score()
     # Teapot logic
     spawn_teapot()
     update_teapot()
-    teapot_collision()  # Check for teapot collision
+    teapot_collision()  
     draw_teapot()
     # Draw power-up keys
     # draw_powerup_circle()
@@ -868,7 +861,7 @@ def keyboard(key, x, y):
             print("CHEAT MODE:",cheat_mode)
             print("CHEAT MODE:",cheat_mode)
             print("CHEAT MODE:",cheat_mode)
-        if key == 'w':  # Toggle camera mode
+        if key == 'w':  
             camera_mode = "first" if camera_mode == "third" else "third"
         elif key == 'a':
             player_x += move_speed  
@@ -880,7 +873,7 @@ def keyboard(key, x, y):
                 player_x = -road_width / 2 + player_size / 2
         elif key == ' ' and bullets > 0:
             fire_bullet()
-        # Powerup 1: Increase bullet count by 1 (key: J)
+        # Powerup 1: Increase bullet count by 1
         elif key == 'j':
             if cheat_mode==False:
                 if coinCount >= 5 and bullets < 5:
@@ -902,7 +895,7 @@ def keyboard(key, x, y):
                     print("Not enough coins for Bullet Powerup!")
 
 
-        # Powerup 2: Halve movement speed (key: K)
+        # Powerup 2: Halve movement speed
         elif key == 'k':
             
             if coinCount >= 10:
@@ -912,11 +905,11 @@ def keyboard(key, x, y):
             else:
                 print("Not enough coins for Slowdown Powerup!")
 
-        # Powerup 3: Bomb - Destroy vehicles in range (key: L)
+        # Powerup 3: Bomb - Destroy vehicles in range
         elif key == 'l':
             if cheat_mode==False:
                 if coinCount >= 20:
-                    bomb_radius = 15.0  # Define radius around player
+                    bomb_radius = 15.0  
                     vehicles[:] = [v for v in vehicles if math.hypot(v["x_position"] - player_x, v["z_position"] - player_z) > bomb_radius]
                     coinCount -= 20
                     print("Powerup Activated: Bomb!")
@@ -924,7 +917,7 @@ def keyboard(key, x, y):
                     print("Not enough coins for Bomb Powerup!")
             else:
                 if coinCount >= 0:
-                    bomb_radius = 15.0  # Define radius around player
+                    bomb_radius = 15.0  
                     vehicles[:] = [v for v in vehicles if math.hypot(v["x_position"] - player_x, v["z_position"] - player_z) > bomb_radius]
                     coinCount -= 0
                     print("Powerup Activated: Bomb!")
@@ -948,7 +941,6 @@ def main():
     glutDisplayFunc(display)
     glutKeyboardFunc(keyboard)
     glutIdleFunc(display)
-    # glutPassiveMotionFunc(mouse_motion)
     glutMainLoop()
 
 
