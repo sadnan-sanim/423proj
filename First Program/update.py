@@ -79,9 +79,11 @@ def spawn_vehicle():
 
     if side == "left":
         x_position = -road_width / 2 + vehicle_size / 2
+        
         direction = "right"
     else:
         x_position = road_width / 2 - vehicle_size / 2
+        
         direction = "left"
 
     base_speed = 0.005 + min(score * 0.0002, 0.015)  
@@ -930,18 +932,17 @@ def keyboard(key, x, y):
 
 
 
-def main():
-    glutInit()
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
-    glutInitWindowSize(width, height)
-    glutInitWindowPosition(100, 100)
-    glutCreateWindow(b"Run To Live 3D game")
 
-    init()
-    glutDisplayFunc(display)
-    glutKeyboardFunc(keyboard)
-    glutIdleFunc(display)
-    glutMainLoop()
+glutInit()
+glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+glutInitWindowSize(width, height)
+glutInitWindowPosition(100, 100)
+glutCreateWindow(b"Run To Live 3D game")
+
+init()
+glutDisplayFunc(display)
+glutKeyboardFunc(keyboard)
+glutIdleFunc(display)
+glutMainLoop()
 
 
-main()
